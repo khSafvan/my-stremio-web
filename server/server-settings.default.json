@@ -6,7 +6,10 @@
     "btDownloadSpeedSoftLimit": 1073741824,
     "btDownloadSpeedHardLimit": 1073741824,
     "btMinPeersForStable": 10,
-    "transcodeHorsepower": 1.0,
+    "transcodeHorsepower": 1,
+    "transcodeMaxBitRate": 0,
     "transcodeConcurrency": 2,
-    "transcodeMaxBitRate": 0
+    "transcodeTrackConcurrency": 1,
+    "transcodeMaxWidth": 1920,
+    "proxyStreamsEnabled": false
 }

@@ -27,7 +27,7 @@
     "targets": "all",
     "resources": [
       "../server/server.js",
-      "../server/server-settings.json"
+      "../server/server-settings.default.json"
     ],
     "icon": [
       "icons/32x32.png",

@@ -52,6 +52,46 @@ impl ServerManager {
         None
     }
 
+    /// Locate Node.js binary (checks PATH, NVM, standard Linux paths)
+    fn find_node_binary() -> Option<PathBuf> {
+        // 1. Check if node is in standard PATH
+        if let Ok(output) = Command::new("node").arg("--version").output() {
+            if output.status.success() {
+                return Some(PathBuf::from("node"));
+            }
+        }
+
+        // 2. Check NVM versions in ~/.nvm/versions/node/
+        if let Ok(home) = std::env::var("HOME") {
+            let nvm_node_dir = Path::new(&home).join(".nvm/versions/node");
+            if nvm_node_dir.exists() {
+                if let Ok(entries) = std::fs::read_dir(nvm_node_dir) {
+                    let mut versions: Vec<PathBuf> = entries
+                        .filter_map(|e| e.ok().map(|e| e.path()))
+                        .filter(|p| p.is_dir())
+                        .collect();
+                    versions.sort();
+                    if let Some(latest) = versions.last() {
+                        let node_bin = latest.join("bin/node");
+                        if node_bin.exists() {
+                            return Some(node_bin);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Fallback to standard locations
+        for candidate in &["/usr/bin/node", "/usr/local/bin/node"] {
+            let p = Path::new(candidate);
+            if p.exists() {
+                return Some(p.to_path_buf());
+            }
+        }
+
+        None
+    }
+
     /// Start the bundled streaming server if not already running
     pub fn start(&self) {
         if Self::is_server_listening() {
@@ -64,21 +104,26 @@ impl ServerManager {
             return;
         };
 
-        println!("[Tauri] Spawning optimized embedded streaming server at {:?}", server_path);
-
-        // Auto-detect JS runtime: prefer 'bun' if available, otherwise 'node'
-        let runtime = if Command::new("bun").arg("--version").output().is_ok() {
-            "bun"
-        } else {
-            "node"
+        let Some(node_bin) = Self::find_node_binary() else {
+            eprintln!("[Tauri] Could not locate Node.js. Ensure Node.js (or NVM) is installed.");
+            return;
         };
 
-        let mut cmd = Command::new(runtime);
+        println!("[Tauri] Spawning streaming server with {:?} at {:?}", node_bin, server_path);
+
+        let mut cmd = Command::new(&node_bin);
         cmd.env("UV_THREADPOOL_SIZE", "32")
-            .env("NODE_ENV", "production");
+            .env("NODE_ENV", "production")
+            .env("NO_CORS", "1");
 
         if let Some(parent) = server_path.parent() {
             cmd.env("SETTINGS_PATH", parent);
+
+            let settings_file = parent.join("server-settings.json");
+            let default_settings = parent.join("server-settings.default.json");
+            if !settings_file.exists() && default_settings.exists() {
+                let _ = std::fs::copy(&default_settings, &settings_file);
+            }
         }
 
         // Auto-detect system hardware-accelerated FFmpeg / FFprobe
@@ -99,12 +144,25 @@ impl ServerManager {
             Ok(child_process) => {
                 let mut guard = self.child.lock().unwrap();
                 *guard = Some(child_process);
-                println!("[Tauri] Embedded streaming server spawned with high-performance profile (32 workers, 4GB heap, unthrottled bandwidth).");
+                println!("[Tauri] Embedded streaming server spawned.");
             }
             Err(err) => {
-                eprintln!("[Tauri] Failed to spawn streaming server: {err}. Ensure 'node' is installed in PATH.");
+                eprintln!("[Tauri] Failed to spawn streaming server: {err}.");
             }
         }
+
+        // Wait synchronously until the server is ready and accepting requests on 127.0.0.1:11470
+        println!("[Tauri] Waiting for streaming server on 127.0.0.1:11470...");
+        let start_time = std::time::Instant::now();
+        let timeout = Duration::from_secs(5);
+        while start_time.elapsed() < timeout {
+            if Self::is_server_listening() {
+                println!("[Tauri] Streaming server is online and ready on 127.0.0.1:11470 (took {:?}).", start_time.elapsed());
+                return;
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        eprintln!("[Tauri] Warning: streaming server did not respond within {:?}", timeout);
     }
 
     /// Terminate the child process cleanly
@@ -116,11 +174,5 @@ impl ServerManager {
             let _ = child.wait();
             println!("[Tauri] Embedded streaming server child terminated.");
         }
-    }
-}
-
-impl Drop for ServerManager {
-    fn drop(&mut self) {
-        self.stop();
     }
 }

@@ -14,6 +14,9 @@
 /server/data/
 /server/*.log
 /server/torrents/
+/server/server-settings.json
+/server/*.json
+!/server/server-settings.default.json
 
 # Package manager locks & logs
 /yarn.lock
