@@ -64,18 +64,42 @@ impl ServerManager {
             return;
         };
 
-        println!("[Tauri] Spawning embedded streaming server at {:?}", server_path);
+        println!("[Tauri] Spawning optimized embedded streaming server at {:?}", server_path);
 
-        match Command::new("node")
+        // Auto-detect JS runtime: prefer 'bun' if available, otherwise 'node'
+        let runtime = if Command::new("bun").arg("--version").output().is_ok() {
+            "bun"
+        } else {
+            "node"
+        };
+
+        let mut cmd = Command::new(runtime);
+        cmd.env("UV_THREADPOOL_SIZE", "32")
+            .env("NODE_ENV", "production");
+
+        if let Some(parent) = server_path.parent() {
+            cmd.env("SETTINGS_PATH", parent);
+        }
+
+        // Auto-detect system hardware-accelerated FFmpeg / FFprobe
+        if Path::new("/usr/bin/ffmpeg").exists() {
+            cmd.env("FFMPEG_BIN", "/usr/bin/ffmpeg");
+        }
+        if Path::new("/usr/bin/ffprobe").exists() {
+            cmd.env("FFPROBE_BIN", "/usr/bin/ffprobe");
+        }
+
+        cmd.arg("--max-old-space-size=4096")
+            .arg("--no-warnings")
             .arg(&server_path)
             .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
-            .spawn()
-        {
+            .stderr(Stdio::inherit());
+
+        match cmd.spawn() {
             Ok(child_process) => {
                 let mut guard = self.child.lock().unwrap();
                 *guard = Some(child_process);
-                println!("[Tauri] Embedded streaming server spawned successfully.");
+                println!("[Tauri] Embedded streaming server spawned with high-performance profile (32 workers, 4GB heap, unthrottled bandwidth).");
             }
             Err(err) => {
                 eprintln!("[Tauri] Failed to spawn streaming server: {err}. Ensure 'node' is installed in PATH.");

@@ -1,6 +1,6 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
-const routesRegexp = require('../src/common/routesRegexp');
+const routesRegexp = require('../ui/common/routesRegexp');
 
 describe('routesRegexp', () => {
     describe('intro route regexp', () => {

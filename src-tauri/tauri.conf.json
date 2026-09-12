@@ -4,10 +4,7 @@
   "version": "5.0.0",
   "identifier": "com.stremio.desktop",
   "build": {
-    "frontendDist": "../build",
-    "devUrl": "https://localhost:8080",
-    "beforeDevCommand": "pnpm start",
-    "beforeBuildCommand": "pnpm run build"
+    "frontendDist": "../build"
   },
   "app": {
     "windows": [
@@ -29,7 +26,8 @@
     "active": true,
     "targets": "all",
     "resources": [
-      "../server/server.js"
+      "../server/server.js",
+      "../server/server-settings.json"
     ],
     "icon": [
       "icons/32x32.png",

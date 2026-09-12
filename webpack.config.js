@@ -37,7 +37,7 @@ module.exports = (env, argv) => ({
     mode: argv.mode,
     devtool: argv.mode === 'production' ? 'source-map' : 'eval-source-map',
     entry: {
-        main: './src/index.js',
+        main: './ui/index.js',
         worker: './node_modules/@stremio/stremio-core-web/worker.js'
     },
     output: {
@@ -177,8 +177,8 @@ module.exports = (env, argv) => ({
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.json', '.less', '.wasm'],
         alias: {
-            'stremio': path.resolve(__dirname, 'src'),
-            'stremio-router': path.resolve(__dirname, 'src', 'router')
+            'stremio': path.resolve(__dirname, 'ui'),
+            'stremio-router': path.resolve(__dirname, 'ui', 'router')
         }
     },
     devServer: {
@@ -239,7 +239,7 @@ module.exports = (env, argv) => ({
             filename: `${COMMIT_HASH}/styles/[name].css`
         }),
         new HtmlWebPackPlugin({
-            template: './src/index.html',
+            template: './ui/index.html',
             inject: false,
             scriptLoading: 'blocking',
             faviconsPath: 'favicons',

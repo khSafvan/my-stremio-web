@@ -3,7 +3,7 @@ const path = require('path');
 const recast = require('recast');
 const babelParser = require('@babel/parser');
 
-const directoryToScan = './src';
+const directoryToScan = './ui';
 
 function toKey(str) {
     return str

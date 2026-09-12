@@ -2,15 +2,14 @@
 
 <img src="/assets/images/stremio_symbol.png" width="90" alt="Stremio logo">
 
-# Stremio Web
+# Stremio Desktop (Tauri v2)
 
-**Freedom to Stream** — the official web UI of [Stremio](https://www.stremio.com), a modern media center and all-in-one streaming platform.
+**Freedom to Stream** — Modern, high-performance Linux desktop application powered by **Tauri v2**, **React**, **WebAssembly**, and an integrated **Stremio Streaming Server (EngineFS)**.
 
-[![Build](https://github.com/Stremio/stremio-web/actions/workflows/build.yml/badge.svg)](https://github.com/Stremio/stremio-web/actions/workflows/build.yml)
 [![Version](https://img.shields.io/github/package-json/v/Stremio/stremio-web/development?label=version&color=7b5bf5)](https://github.com/Stremio/stremio-web/releases)
 [![License](https://img.shields.io/github/license/Stremio/stremio-web?color=7b5bf5)](/LICENSE.md)
 
-**[🌐 Open the Web App](https://web.stremio.com)** · [Website](https://www.stremio.com) · [Report a Bug](https://github.com/Stremio/stremio-web/issues/new/choose)
+[Website](https://www.stremio.com) · [Report an Issue](https://github.com/Stremio/stremio-web/issues/new/choose)
 
 </div>
 
@@ -18,6 +17,8 @@
 
 ## ✨ Features
 
+- 🖥️ **Native Linux Desktop (Tauri v2)** — Lightweight, memory-efficient native desktop application replacing legacy heavy wrappers.
+- ⚡ **Integrated Streaming Server** — Bundled official Stremio Streaming Server (`server/server.js` v4.21.1 EngineFS) running locally on `127.0.0.1:11470` and automatically managed by Rust process supervisors.
 - 🎬 **Cinematic Hero Banner** — Dynamic top carousel highlighting featured titles from active catalogs with quick playback actions.
 - 📐 **Modern Flat UI** — Ultra-lightweight flat dark surfaces (`#0b0c10`, `#14171f`) with clean 1px borders, zero GPU-heavy backdrop blur, and zero gradient repainting bottlenecks.
 - 📚 **Direct Library & New Episodes Shelves** — Quick home screen access to Continue Watching, unwatched new episodes with notification badges, and personal Library shelves.
@@ -28,21 +29,35 @@
 - 💬 **Advanced Subtitles** — Custom sizing, colors, font offsets, and real-time addon subtitle integration.
 - ⌨️ **Keyboard & Gamepad First** — Full navigation and playback support without requiring a mouse.
 - 🌍 **50+ Languages** — Community localized via [stremio-translations](https://github.com/Stremio/stremio-translations).
-- 🖥️ **Native Linux App Support** — Built-in [Tauri v2](https://v2.tauri.app) packaging with embedded Stremio Streaming Server (EngineFS).
 
 ---
 
 ## 🛠 Architecture
 
-The frontend is a React application powered by [stremio-core](https://github.com/Stremio/stremio-core) — Stremio's high-performance Rust state machine compiled to WebAssembly running inside a dedicated Web Worker:
+Stremio Desktop combines high-performance native Rust desktop integration with a sandboxed WebAssembly engine:
 
 ```mermaid
 flowchart LR
-    UI["React Flat UI<br>(this repository)"] <--> Core["stremio-core<br>Rust → WASM Worker"]
-    Core <--> API["Stremio API"]
-    Core <--> Addons["Addons Engine"]
-    UI --> Video["stremio-video"]
-    UI -.-> Server["Streaming Server<br>127.0.0.1:11470"]
+    subgraph Tauri["Tauri v2 Native Desktop (Rust)"]
+        Window["Native Window & Webview"]
+        Supervisor["Streaming Server Supervisor"]
+    end
+
+    subgraph Core["Frontend & Engine"]
+        UI["React Flat UI"]
+        WASM["stremio-core WASM Worker"]
+        Player["stremio-video Player"]
+    end
+
+    subgraph Engine["Streaming Engine"]
+        Server["Local Server (EngineFS)<br>127.0.0.1:11470"]
+    end
+
+    Window --> UI
+    UI <--> WASM
+    UI --> Player
+    Supervisor <--> Server
+    Player -. Streams .-> Server
 ```
 
 ---
@@ -50,99 +65,50 @@ flowchart LR
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js**: `v22+`
-- **pnpm**: `v11+`
-- *(Optional for desktop builds)* **Rust / Cargo**: `v1.75+`
+- **Rust / Cargo**: `v1.75+` (for compiling and running the native Linux app)
+- **Node.js** or **Bun**: (Only required if running the streaming server or recompiling UI)
 
-### Quick Start
+### Quick Start (Launch Native Linux Client)
+
+You do **not** need to install packages or run `pnpm install`. All frontend assets are already embedded into the Rust desktop binary. Simply run:
+
 ```bash
-# Clone the repository
-git clone https://github.com/khSafvan/my-stremio-web.git
-cd my-stremio-web
+# Launch Stremio Desktop with Cargo
+cargo run --bin stremio
 
-# Install dependencies
-pnpm install
-
-# Start development server with hot reload
-pnpm start
-# or use the helper script:
+# Or use the helper script:
 ./scripts/dev.sh
 ```
 
-The application will be available at `http://localhost:8080`.
+---
+
+## 📦 Building Distribution Packages
+
+To compile the native production Linux binaries and distribution packages (`.AppImage` and `.deb`):
+
+```bash
+pnpm run build
+# or:
+./scripts/build.sh
+```
+
+Compiled packages are saved to:
+`src-tauri/target/release/bundle/`
 
 ---
 
-## 📜 NPM Scripts & Helper Scripts
+## 📜 Available Scripts
 
-### NPM Scripts
-| Command | Description |
-|---|---|
-| `pnpm start` | Run Webpack dev server with hot module replacement |
-| `pnpm run dev` | Launch dev server via `./scripts/dev.sh` with environment verification |
-| `pnpm run build` | Compile optimized production bundle to `/build` |
-| `pnpm test` | Run complete Jest test suite (70 unit tests) |
-| `pnpm run lint` | Run ESLint across `src/` |
-| `pnpm run lint:fix` | Automatically fix linting violations |
-| `pnpm run format` | Format code with Prettier |
-| `pnpm run format:check` | Verify code formatting with Prettier |
-| `pnpm run scan-translations` | Run AST scan ensuring no untranslated JSX text strings |
-| `pnpm run server:download` | Download official Stremio Streaming Server bundle (`server/server.js`) |
-| `pnpm run server:run` | Start local streaming server on `127.0.0.1:11470` |
-| `pnpm run desktop` | Launch Tauri Linux desktop app in development mode |
-| `pnpm run tauri:build` | Build production Linux desktop binaries (.AppImage, .deb) |
-| `pnpm run docker:run` | Build and launch containerized application |
-
-### Helper Shell Scripts (`scripts/`)
-All scripts in `scripts/` are executable, idempotent, and include strict error handling (`set -euo pipefail`):
-
-| Script | Usage | Purpose |
+| Command | Script Equivalent | Description |
 |---|---|---|
-| [`dev.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/dev.sh) | `./scripts/dev.sh` | Validates Node/pnpm environments and starts dev server |
-| [`build.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/build.sh) | `./scripts/build.sh`<br>`CLEAN=true ./scripts/build.sh` | Compiles production assets with optional clean step |
-| [`test.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/test.sh) | `./scripts/test.sh` | Executes Jest test suite and translation AST checks |
-| [`lint.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/lint.sh) | `./scripts/lint.sh`<br>`./scripts/lint.sh --fix` | Runs ESLint and Prettier checks with auto-fix support |
-| [`desktop.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/desktop.sh) | `./scripts/desktop.sh`<br>`./scripts/desktop.sh build` | Manages native Tauri desktop dev & packaging workflows |
-| [`download-server.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/download-server.sh) | `./scripts/download-server.sh` | Downloads official Stremio EngineFS server bundle |
-| [`run-server.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/run-server.sh) | `./scripts/run-server.sh` | Launches standalone local server on port 11470 |
-| [`docker-run.sh`](file:///home/zack/Workshop/my-stremio-web/scripts/docker-run.sh) | `./scripts/docker-run.sh` | Builds and runs Stremio Web in a Docker container |
-
----
-
-## 🖥️ Native Linux Desktop Application (Tauri v2)
-
-Stremio Web can be built and run as a lightweight native Linux desktop application powered by **Tauri v2** with the **Stremio Streaming Server** automatically supervised in the background:
-
-```bash
-# 1. Download streaming server bundle
-./scripts/download-server.sh
-
-# 2. Run in development mode
-./scripts/desktop.sh
-# or:
-pnpm run desktop
-
-# 3. Build production distribution (.AppImage and .deb)
-./scripts/desktop.sh build
-# or:
-pnpm run tauri:build
-```
-
-Desktop binaries are compiled to `src-tauri/target/release/stremio`. The desktop application automatically starts the local EngineFS server on `127.0.0.1:11470` and terminates it cleanly when closed.
-
----
-
-## 🐳 Docker Deployment
-
-To build and run in a container:
-```bash
-# Using the helper script:
-./scripts/docker-run.sh
-
-# Or using Docker directly:
-docker build -t stremio-web .
-docker run -p 8080:8080 stremio-web
-```
+| `cargo run --bin stremio` | `./scripts/dev.sh` | Launch Stremio Linux desktop client directly |
+| `cargo build --bin stremio` | `./scripts/build.sh` | Compile native debug binary (`target/debug/stremio`) |
+| `cargo build --release --bin stremio` | `./scripts/build.sh --release` | Compile optimized release binary (`target/release/stremio`) |
+| `npm test` / `pnpm test` | `./scripts/test.sh` | Run Jest unit tests and AST translation check |
+| `npm run lint` / `pnpm run lint` | `./scripts/lint.sh` | Run ESLint check |
+| `npm run lint:fix` / `pnpm run lint:fix` | `./scripts/lint.sh --fix` | Automatically fix linting violations |
+| `npm run server:download` | `./scripts/download-server.sh` | Download official Stremio EngineFS server bundle |
+| `npm run server:run` | `./scripts/run-server.sh` | Run standalone local streaming server on port 11470 |
 
 ---
 

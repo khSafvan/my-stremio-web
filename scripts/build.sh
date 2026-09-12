@@ -2,11 +2,11 @@
 # Copyright (C) 2017-2026 Smart code 203358507
 #
 # scripts/build.sh
-# Creates a production bundle in the 'build' directory.
+# Builds the Stremio Desktop native binary directly with Cargo / Rust.
 #
 # Usage:
-#   ./scripts/build.sh
-#   CLEAN=true ./scripts/build.sh
+#   ./scripts/build.sh            # Builds debug binary (target/debug/stremio)
+#   ./scripts/build.sh --release  # Builds optimized release binary (target/release/stremio)
 
 set -euo pipefail
 
@@ -15,35 +15,28 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${PROJECT_ROOT}"
 
-# Auto-detect Node & pnpm from NVM if not present in current shell PATH
-if ! command -v node >/dev/null 2>&1 || ! command -v pnpm >/dev/null 2>&1; then
-    if [ -d "${HOME}/.nvm/versions/node" ]; then
-        LATEST_NODE=$(ls -d "${HOME}/.nvm/versions/node"/v* 2>/dev/null | tail -n 1)
-        if [ -n "${LATEST_NODE}" ] && [ -d "${LATEST_NODE}/bin" ]; then
-            export PATH="${LATEST_NODE}/bin:${PATH}"
-        fi
-    fi
+# Ensure cargo is on PATH
+export PATH="${HOME}/.cargo/bin:${PATH}"
+
+# Ensure streaming server bundle is present
+if [ ! -f "server/server.js" ]; then
+    echo "==> server.js not found. Downloading streaming server bundle..."
+    "${SCRIPT_DIR}/download-server.sh"
 fi
 
-echo "==> Building Stremio Web for production..."
-
-# Verify Node.js and pnpm
-command -v node >/dev/null 2>&1 || { echo "Error: node is required" >&2; exit 1; }
-command -v pnpm >/dev/null 2>&1 || { echo "Error: pnpm is required" >&2; exit 1; }
-
-# Optional clean step before build
-if [ "${CLEAN:-false}" = "true" ] && [ -d "build" ]; then
-    echo "==> Cleaning previous build directory..."
-    rm -rf build
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "Error: Cargo / Rust is required to build the desktop application." >&2
+    exit 1
 fi
 
-# Ensure dependencies are up-to-date (idempotent)
-if [ ! -d "node_modules" ]; then
-    echo "==> Installing dependencies with pnpm..."
-    pnpm install --frozen-lockfile
+MODE="${1:-}"
+
+if [ "${MODE}" = "--release" ] || [ "${MODE}" = "release" ]; then
+    echo "==> Compiling optimized release binary with Cargo..."
+    cargo build --release --bin stremio
+    echo "==> Release binary compiled to: ${PROJECT_ROOT}/target/release/stremio"
+else
+    echo "==> Compiling Stremio Desktop binary with Cargo..."
+    cargo build --bin stremio
+    echo "==> Binary compiled to: ${PROJECT_ROOT}/target/debug/stremio"
 fi
-
-echo "==> Running production webpack build..."
-pnpm run build
-
-echo "==> Build completed successfully. Output saved to '${PROJECT_ROOT}/build'."

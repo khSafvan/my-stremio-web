@@ -25,19 +25,50 @@ if ! command -v node >/dev/null 2>&1 || ! command -v pnpm >/dev/null 2>&1; then
     fi
 fi
 
-echo "==> Running test suite..."
-
-command -v pnpm >/dev/null 2>&1 || { echo "Error: pnpm is required" >&2; exit 1; }
+RUNNER=""
+if command -v bun >/dev/null 2>&1; then
+    RUNNER="bun"
+elif command -v pnpm >/dev/null 2>&1; then
+    RUNNER="pnpm"
+elif command -v npm >/dev/null 2>&1; then
+    RUNNER="npm"
+elif command -v npx >/dev/null 2>&1; then
+    RUNNER="npx"
+else
+    echo "Error: JS runner (bun, pnpm, or npm) is required for tests" >&2
+    exit 1
+fi
 
 # Forward any flags directly to Jest if provided
 if [ "$#" -gt 0 ]; then
-    exec pnpm test "$@"
+    if [ "${RUNNER}" = "bun" ]; then
+        exec bun test "$@"
+    elif [ "${RUNNER}" = "pnpm" ]; then
+        exec pnpm test "$@"
+    elif [ "${RUNNER}" = "npm" ]; then
+        exec npm test -- "$@"
+    else
+        exec npx jest "$@"
+    fi
 fi
 
 # Run standard test suite
-pnpm test
-
-echo "==> Verifying translation keys..."
-pnpm run scan-translations
+if [ "${RUNNER}" = "bun" ]; then
+    bun run test
+    echo "==> Verifying translation keys..."
+    bun run scan-translations
+elif [ "${RUNNER}" = "pnpm" ]; then
+    pnpm test
+    echo "==> Verifying translation keys..."
+    pnpm run scan-translations
+elif [ "${RUNNER}" = "npm" ]; then
+    npm test
+    echo "==> Verifying translation keys..."
+    npm run scan-translations
+else
+    npx jest
+    echo "==> Verifying translation keys..."
+    npx jest ./tests/i18nScan.test.js
+fi
 
 echo "==> All test suites passed successfully!"

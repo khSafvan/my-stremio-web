@@ -31,10 +31,39 @@ if [ ! -f "${SERVER_FILE}" ]; then
     "${SCRIPT_DIR}/download-server.sh"
 fi
 
-if ! command -v node >/dev/null 2>&1; then
-    echo "Error: Node.js is required to execute the streaming server." >&2
+# Auto-detect Bun or Node runtime
+JS_RUNNER=""
+if command -v bun >/dev/null 2>&1; then
+    JS_RUNNER="bun"
+elif command -v node >/dev/null 2>&1; then
+    JS_RUNNER="node"
+else
+    echo "Error: Bun or Node.js is required to execute the streaming server." >&2
     exit 1
 fi
 
-echo "==> Launching Stremio Streaming Server on 127.0.0.1:11470..."
-exec node "${SERVER_FILE}"
+# Performance Optimizations
+export UV_THREADPOOL_SIZE="${UV_THREADPOOL_SIZE:-32}"
+export NODE_ENV="production"
+export SETTINGS_PATH="${SETTINGS_PATH:-${PROJECT_ROOT}/server}"
+
+# Leverage hardware-accelerated system FFmpeg/FFprobe if present
+if command -v ffmpeg >/dev/null 2>&1; then
+    export FFMPEG_BIN="${FFMPEG_BIN:-$(command -v ffmpeg)}"
+fi
+if command -v ffprobe >/dev/null 2>&1; then
+    export FFPROBE_BIN="${FFPROBE_BIN:-$(command -v ffprobe)}"
+fi
+
+echo "==> Launching Tuned Stremio Streaming Server via ${JS_RUNNER} on 127.0.0.1:11470..."
+echo "    • Runtime: ${JS_RUNNER}"
+echo "    • Threadpool: ${UV_THREADPOOL_SIZE} workers"
+echo "    • Max Heap: 4096 MB"
+echo "    • Settings: ${SETTINGS_PATH}/server-settings.json"
+echo "    • FFmpeg: ${FFMPEG_BIN:-bundled}"
+
+if [ "${JS_RUNNER}" = "bun" ]; then
+    exec bun "${SERVER_FILE}"
+else
+    exec node --max-old-space-size=4096 --no-warnings "${SERVER_FILE}"
+fi

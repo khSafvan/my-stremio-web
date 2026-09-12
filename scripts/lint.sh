@@ -25,7 +25,19 @@ if ! command -v node >/dev/null 2>&1 || ! command -v pnpm >/dev/null 2>&1; then
     fi
 fi
 
-command -v pnpm >/dev/null 2>&1 || { echo "Error: pnpm is required" >&2; exit 1; }
+RUNNER=""
+if command -v bun >/dev/null 2>&1; then
+    RUNNER="bun"
+elif command -v pnpm >/dev/null 2>&1; then
+    RUNNER="pnpm"
+elif command -v npm >/dev/null 2>&1; then
+    RUNNER="npm"
+elif command -v npx >/dev/null 2>&1; then
+    RUNNER="npx"
+else
+    echo "Error: JS runner (bun, pnpm, or npm) is required for linting" >&2
+    exit 1
+fi
 
 FIX_MODE=false
 if [ "${1:-}" = "--fix" ]; then
@@ -34,18 +46,40 @@ fi
 
 if [ "${FIX_MODE}" = true ]; then
     echo "==> Running ESLint auto-fix..."
-    pnpm run lint:fix
-
-    echo "==> Formatting code with Prettier..."
-    pnpm run format
+    if [ "${RUNNER}" = "bun" ]; then
+        bun run lint:fix
+        echo "==> Formatting code with Prettier..."
+        bun run format
+    elif [ "${RUNNER}" = "pnpm" ]; then
+        pnpm run lint:fix
+        echo "==> Formatting code with Prettier..."
+        pnpm run format
+    else
+        npm run lint:fix
+        echo "==> Formatting code with Prettier..."
+        npm run format
+    fi
     echo "==> Auto-fix complete."
 else
     echo "==> Running ESLint check..."
-    pnpm run lint
-
-    echo "==> Running Prettier format check..."
-    pnpm run format:check || {
-        echo "Tip: Run './scripts/lint.sh --fix' or 'pnpm run format' to reformat code automatically."
-    }
+    if [ "${RUNNER}" = "bun" ]; then
+        bun run lint
+        echo "==> Running Prettier format check..."
+        bun run format:check || {
+            echo "Tip: Run './scripts/lint.sh --fix' to reformat code automatically."
+        }
+    elif [ "${RUNNER}" = "pnpm" ]; then
+        pnpm run lint
+        echo "==> Running Prettier format check..."
+        pnpm run format:check || {
+            echo "Tip: Run './scripts/lint.sh --fix' to reformat code automatically."
+        }
+    else
+        npm run lint
+        echo "==> Running Prettier format check..."
+        npm run format:check || {
+            echo "Tip: Run './scripts/lint.sh --fix' to reformat code automatically."
+        }
+    fi
     echo "==> Lint checks completed."
 fi
