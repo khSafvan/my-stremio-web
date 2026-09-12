@@ -21,17 +21,17 @@
 }
 
 // iOS pads the bottom inset more than needed, so we deduce the actual inset size when using the webapp
-@calculated-bottom-safe-inset: ~"min(env(safe-area-inset-bottom, 0rem), max(1rem, calc(var(--viewport-height-diff) - env(safe-area-inset-top, 0rem))))";
+@calculated-bottom-safe-inset: ~'min(env(safe-area-inset-bottom, 0rem), max(1rem, calc(var(--viewport-height-diff) - env(safe-area-inset-top, 0rem))))';
 
 // Viewport sizes
-@viewport-width: ~"100vw";
-@viewport-height: ~"100vh";
+@viewport-width: ~'100vw';
+@viewport-height: ~'100vh';
 
 // HTML sizes
-@html-width: ~"calc(max(var(--small-viewport-width), var(--dynamic-viewport-width)))";
-@html-height: ~"calc(max(var(--small-viewport-height), var(--dynamic-viewport-height)))";
-@html-standalone-width: ~"calc(max(100%, var(--large-viewport-width)))";
-@html-standalone-height: ~"calc(max(100%, var(--large-viewport-height)))";
+@html-width: ~'calc(max(var(--small-viewport-width), var(--dynamic-viewport-width)))';
+@html-height: ~'calc(max(var(--small-viewport-height), var(--dynamic-viewport-height)))';
+@html-standalone-width: ~'calc(max(100%, var(--large-viewport-width)))';
+@html-standalone-height: ~'calc(max(100%, var(--large-viewport-height)))';
 
 // Safe area insets
 @safe-area-inset-top: env(safe-area-inset-top, 0rem);
@@ -51,9 +51,9 @@
     --horizontal-nav-bar-size: 5.5rem;
     --vertical-nav-bar-size: 6rem;
     --focus-outline-size: 2px;
-    --color-facebook: #1877F1;
+    --color-facebook: #1877f1;
     --color-x: #000000;
-    --color-reddit: #FF4500;
+    --color-reddit: #ff4500;
     --color-imdb: #f5c518;
     --color-trakt: rgb(255, 255, 255);
     --color-placeholder: #60606080;
@@ -71,7 +71,7 @@
     --modal-background-color: #12141c;
     --outer-glow: none;
     --warning-accent-color: rgba(255, 165, 0, 1);
-    --danger-accent-color: rgba(220, 38, 38, 1);  
+    --danger-accent-color: rgba(220, 38, 38, 1);
     --border-radius: 0.5rem;
     --top-overlay-size: @top-overlay-size;
     --bottom-overlay-size: @bottom-overlay-size;
@@ -163,13 +163,43 @@ svg {
 html {
     width: @html-width;
     height: @html-height;
-    font-family: 'PlusJakartaSans', 'Arial', 'Helvetica', 'TwemojiFlags', 'sans-serif';
+    font-family: var(
+        --font-family-body,
+        'Inter',
+        'TwemojiFlags',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        sans-serif
+    );
     overflow: auto;
     overscroll-behavior: none;
     user-select: none;
     touch-action: manipulation;
     background-color: var(--primary-background-color);
     -webkit-tap-highlight-color: transparent;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+    }
+
+    code,
+    pre,
+    kbd,
+    samp {
+        font-family: var(
+            --font-family-mono,
+            'JetBrains Mono',
+            'Fira Code',
+            monospace
+        );
+    }
 
     @media (display-mode: standalone) {
         width: @html-standalone-width;
@@ -191,9 +221,15 @@ html {
 
             .toasts-container {
                 position: absolute;
-                top: calc(1.2 * var(--horizontal-nav-bar-size) + var(--safe-area-inset-top));
+                top: calc(
+                    1.2 * var(--horizontal-nav-bar-size) +
+                        var(--safe-area-inset-top)
+                );
                 right: var(--safe-area-inset-right);
-                bottom: calc(1.2 * var(--horizontal-nav-bar-size) + var(--safe-area-inset-bottom, 0rem));
+                bottom: calc(
+                    1.2 * var(--horizontal-nav-bar-size) +
+                        var(--safe-area-inset-bottom, 0rem)
+                );
                 left: auto;
                 z-index: 1;
                 padding: 0 calc(0.5 * var(--horizontal-nav-bar-size));
@@ -230,7 +266,10 @@ html {
                 @media only screen and (max-width: @minimum) {
                     left: 0.5rem;
                     right: 0.5rem;
-                    bottom: calc(var(--vertical-nav-bar-size) + var(--safe-area-inset-bottom) + 0.5rem);
+                    bottom: calc(
+                        var(--vertical-nav-bar-size) +
+                            var(--safe-area-inset-bottom) + 0.5rem
+                    );
                 }
             }
         }

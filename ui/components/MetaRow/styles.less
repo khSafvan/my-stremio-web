@@ -17,8 +17,14 @@
         .title-container {
             flex: 1;
             max-height: 2.4em;
-            font-size: 1.6rem;
-            font-weight: 500;
+            font-family: var(
+                --font-family-title,
+                'Plus Jakarta Sans',
+                sans-serif
+            );
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
             color: var(--primary-foreground-color);
         }
 
@@ -29,29 +35,49 @@
             align-items: center;
             max-width: 12rem;
             height: 2.5rem;
-            padding: 0 0.5rem 0 1rem;
-            border-radius: 2.5rem;
-            opacity: 0.6;
+            padding: 0 0.75rem 0 1rem;
+            border-radius: 8px;
+            opacity: 0.85;
+            transition:
+                background-color 140ms ease,
+                opacity 140ms ease;
 
-            &:hover, &:focus {
+            &:hover,
+            &:focus {
                 outline: none;
-                background-color: var(--overlay-color);
+                background-color: var(--springroll-surface-slate, #163530);
                 opacity: 1;
+
+                .label {
+                    color: var(--springroll-mint, #00c49f);
+                }
+
+                .icon {
+                    color: var(--springroll-mint, #00c49f);
+                }
             }
 
             .label {
                 flex: 0 1 auto;
                 max-height: 1.2em;
-                font-size: 1rem;
-                font-weight: 500;
-                color: var(--primary-foreground-color);
+                font-family: var(
+                    --font-family-title,
+                    'Plus Jakarta Sans',
+                    sans-serif
+                );
+                font-size: 0.95rem;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                color: var(--springroll-muted-sage, #6c8a82);
+                transition: color 140ms ease;
             }
 
             .icon {
                 flex: none;
-                height: 1.5rem;
-                margin-left: 0.5rem;
-                color: var(--primary-foreground-color);
+                height: 1.25rem;
+                margin-left: 0.4rem;
+                color: var(--springroll-muted-sage, #6c8a82);
+                transition: color 140ms ease;
             }
         }
     }
@@ -120,7 +146,8 @@
                     display: none;
                 }
 
-                &.poster-shape-poster, &.poster-shape-square {
+                &.poster-shape-poster,
+                &.poster-shape-square {
                     flex: 0 0 31%;
                 }
 

@@ -12,23 +12,32 @@
 
     .title {
         flex: none;
+        font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+        font-size: 1.25rem;
         font-weight: 700;
+        letter-spacing: 0.02em;
         color: var(--primary-foreground-color);
     }
 
     .label {
         flex: none;
+        font-family: var(--font-family-body, 'Inter', sans-serif);
         font-weight: 500;
-        color: var(--primary-foreground-color);
-        opacity: 0.5;
+        color: var(--springroll-muted-sage, #6c8a82);
     }
 
     .value {
         flex: none;
         margin-top: 0.25rem;
+        font-family: var(
+            --font-family-mono,
+            'JetBrains Mono',
+            'Fira Code',
+            monospace
+        );
         font-weight: 600;
         font-variant-numeric: tabular-nums;
-        color: var(--primary-foreground-color);
+        color: var(--springroll-mint, #00c49f);
     }
 
     .stats {
@@ -67,7 +76,12 @@
             .hash {
                 flex: 1;
                 min-width: 0;
-                font-family: monospace;
+                font-family: var(
+                    --font-family-mono,
+                    'JetBrains Mono',
+                    'Fira Code',
+                    monospace
+                );
                 font-size: 0.85rem;
                 color: var(--primary-foreground-color);
                 overflow-wrap: anywhere;

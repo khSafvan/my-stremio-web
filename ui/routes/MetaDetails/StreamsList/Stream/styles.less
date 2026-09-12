@@ -21,11 +21,14 @@
     margin-bottom: 0.5rem;
     border-radius: var(--border-radius);
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         background-color: var(--overlay-color);
     }
 
-    &:hover, &:focus, &:global(.selected) {
+    &:hover,
+    &:focus,
+    &:global(.selected) {
         .icon {
             opacity: 1;
         }
@@ -58,10 +61,16 @@
 
         .addon-name {
             width: 7rem;
-            font-size: 1.1rem;
+            font-family: var(
+                --font-family-title,
+                'Plus Jakarta Sans',
+                sans-serif
+            );
+            font-size: 1.05rem;
+            font-weight: 700;
             text-align: left;
             white-space: pre-wrap;
-            color: var(--primary-foreground-color);
+            color: var(--springroll-crisp-paper, #f8f9fa);
         }
 
         .progress-bar-container {
@@ -73,7 +82,7 @@
                 z-index: 1;
                 position: relative;
                 height: 0.4rem;
-                background-color: var(--primary-accent-color);
+                background-color: var(--springroll-mint, #00c49f);
             }
 
             .progress-bar-background {
@@ -93,14 +102,17 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        font-family: var(--font-family-body, 'Inter', sans-serif);
+        font-size: 0.95rem;
+        line-height: 1.45;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         white-space: pre;
         overflow-y: visible;
         text-overflow: ellipsis;
-        color: var(--primary-foreground-color);
+        color: var(--springroll-muted-sage, #6c8a82);
     }
-    
+
     .icon {
         flex: none;
         width: 3rem;
@@ -108,8 +120,8 @@
         padding: 0.7rem;
         border-radius: 50%;
         opacity: 0;
-        color: var(--primary-foreground-color);
-        background-color: var(--secondary-accent-color);
+        color: var(--springroll-deep-sea, #0b221e);
+        background-color: var(--springroll-mint, #00c49f);
     }
 
     .menu-icon {
@@ -120,12 +132,12 @@
         color: var(--color-placeholder);
     }
 
-	.context-menu-container {
-		max-width: calc(90% - 1.5rem);
-		z-index: 2;
-	
-		.context-menu-content {
-			--spatial-navigation-contain: contain;
+    .context-menu-container {
+        max-width: calc(90% - 1.5rem);
+        z-index: 2;
+
+        .context-menu-content {
+            --spatial-navigation-contain: contain;
 
             .context-menu-title {
                 font-size: 0.9rem;
@@ -135,27 +147,27 @@
                 color: var(--primary-foreground-color);
                 white-space: break-spaces;
             }
-	
-			.context-menu-option-container {
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-				padding: 1rem 1.5rem;
-	
-				&:hover,
-				&:focus {
-					background-color: var(--overlay-color);
-				}
-	
-				.context-menu-option-label {
-					font-size: 1rem;
-					font-weight: 300;
-					color: var(--primary-foreground-color);
+
+            .context-menu-option-container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                padding: 1rem 1.5rem;
+
+                &:hover,
+                &:focus {
+                    background-color: var(--overlay-color);
+                }
+
+                .context-menu-option-label {
+                    font-size: 1rem;
+                    font-weight: 300;
+                    color: var(--primary-foreground-color);
                     text-transform: capitalize;
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 }
 
 @media only screen and (max-width: @small) {
@@ -180,7 +192,7 @@
             }
         }
 
-		.context-menu-container {
+        .context-menu-container {
             &.menu-direction-top-left,
             &.menu-direction-bottom-left {
                 right: 1.5rem;

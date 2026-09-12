@@ -1,36 +1,35 @@
 // Copyright (C) 2017-2026 Smart code 203358507
 
-// Global Design Tokens & Shared LESS Variables
-// Stremio Web Theme Foundations
+// Global Design Tokens & Variables - Flat Design System
+
+// Core Spacing Scale (8pt Grid)
+@spacing-xs: 0.25rem; // 4px
+@spacing-sm: 0.5rem; // 8px
+@spacing-md: 1rem; // 16px
+@spacing-lg: 1.5rem; // 24px
+@spacing-xl: 2rem; // 32px
+@spacing-2xl: 3rem; // 48px
 
 // Z-Index Hierarchy
-@z-index-dropdown: 100;
-@z-index-sticky: 200;
-@z-index-overlay: 300;
-@z-index-modal: 400;
-@z-index-popup: 500;
-@z-index-tooltip: 600;
-@z-index-toast: 700;
+@z-index-base: 0;
+@z-index-dropdown: 1000;
+@z-index-sticky: 1020;
+@z-index-overlay: 1040;
+@z-index-modal: 1050;
+@z-index-popup: 1060;
+@z-index-tooltip: 1070;
+@z-index-toast: 1080;
 
-// Spacing Scale
-@spacing-2xs: 2px;
-@spacing-xs: 4px;
-@spacing-sm: 8px;
-@spacing-md: 12px;
-@spacing-lg: 16px;
-@spacing-xl: 24px;
-@spacing-2xl: 32px;
-
-// Border Radii
+// Border Radius Tokens (Strict 8px / 12px Flat Geometry)
 @radius-sm: 4px;
 @radius-md: 8px;
 @radius-lg: 12px;
-@radius-full: 9999px;
+@radius-pill: 9999px;
 
 // Transition Timings
-@transition-fast: 0.15s ease-in-out;
-@transition-normal: 0.25s ease-in-out;
-@transition-slow: 0.4s ease-in-out;
+@transition-fast: 0.12s ease-in-out;
+@transition-normal: 0.2s ease-in-out;
+@transition-slow: 0.35s ease-in-out;
 
 // Breakpoints
 @breakpoint-mobile: 480px;
@@ -38,14 +37,57 @@
 @breakpoint-desktop: 1024px;
 @breakpoint-wide: 1440px;
 
-// Steamroll / Crunchyroll Theme Tokens
-@steamroll-orange: #F47521;
-@steamroll-orange-hover: #FF7C26;
-@steamroll-orange-active: #D95D10;
-@steamroll-dark-canvas: #000000;
-@steamroll-dark-surface: #141519;
-@steamroll-dark-card: #1D1E24;
-@steamroll-dark-card-hover: #2B2D36;
-@steamroll-badge-bg: rgba(244, 117, 33, 0.14);
-@steamroll-badge-border: rgba(244, 117, 33, 0.4);
-@steamroll-text-muted: #A0A0A0;
+// Typography Hierarchy Tokens
+@font-family-title:
+    'Plus Jakarta Sans',
+    'PlusJakartaSans',
+    system-ui,
+    -apple-system,
+    sans-serif;
+@font-family-body:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+@font-family-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+// Springroll Fresh Flat Theme Tokens
+@springroll-mint: #00c49f; // Primary Accent (Play buttons, active tabs, progress bars, focus rings)
+@springroll-mint-hover: #1ae0b9;
+@springroll-deep-sea: #0b221e; // Dominant BG (Main app background, player backdrop, dark canvas)
+@springroll-surface-slate: #163530; // Surface Layer (Media cards, search bars, category rows, modal layers)
+@springroll-surface-slate-hover: #1f453f;
+@springroll-warm-gold: #f4d06f; // Secondary Accent (Ratings, "New Episode" tags, badges, warm springroll)
+@springroll-crisp-paper: #f8f9fa; // Primary Text (Titles, headers, active borders)
+@springroll-muted-sage: #6c8a82; // Muted Text (Descriptions, cast lists, inactive navigation items)
+
+// Semantic Design Tokens
+@springroll-primary: @springroll-mint;
+@springroll-primary-hover: @springroll-mint-hover;
+@springroll-secondary: @springroll-warm-gold;
+@springroll-dark-canvas: @springroll-deep-sea;
+@springroll-dark-surface: @springroll-surface-slate;
+@springroll-dark-card: @springroll-surface-slate;
+@springroll-dark-card-hover: @springroll-surface-slate-hover;
+@springroll-badge-bg: rgba(0, 196, 159, 0.14);
+@springroll-badge-border: rgba(0, 196, 159, 0.5);
+@springroll-text-primary: @springroll-crisp-paper;
+@springroll-text-muted: @springroll-muted-sage;
+
+// Legacy / Compatibility Aliases
+@springroll-orange: @springroll-mint;
+@springroll-orange-hover: @springroll-mint-hover;
+@springroll-orange-active: #00a685;
+@steamroll-orange: @springroll-mint;
+@steamroll-orange-hover: @springroll-mint-hover;
+@steamroll-orange-active: #00a685;
+@steamroll-dark-canvas: @springroll-deep-sea;
+@steamroll-dark-surface: @springroll-surface-slate;
+@steamroll-dark-card: @springroll-surface-slate;
+@steamroll-dark-card-hover: @springroll-surface-slate-hover;
+@steamroll-badge-bg: @springroll-badge-bg;
+@steamroll-badge-border: @springroll-badge-border;
+@steamroll-text-muted: @springroll-muted-sage;

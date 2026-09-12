@@ -2,7 +2,10 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
-use std::time::Duration;
+use std::time::{Duration, Instant};
+
+#[cfg(target_os = "linux")]
+use std::os::unix::process::CommandExt;
 
 pub struct ServerManager {
     child: Mutex<Option<Child>>,
@@ -18,7 +21,7 @@ impl ServerManager {
     /// Check if a streaming server is already responsive on 127.0.0.1:11470
     pub fn is_server_listening() -> bool {
         let addr: SocketAddr = "127.0.0.1:11470".parse().unwrap();
-        TcpStream::connect_timeout(&addr, Duration::from_millis(400)).is_ok()
+        TcpStream::connect_timeout(&addr, Duration::from_millis(150)).is_ok()
     }
 
     /// Find the path to server.js
@@ -92,12 +95,46 @@ impl ServerManager {
         None
     }
 
+    /// Path to the PID file used to track running instances
+    fn pid_file_path() -> Option<PathBuf> {
+        Self::find_server_path().and_then(|p| p.parent().map(|dir| dir.join("server.pid")))
+    }
+
+    /// Clean up any stale or lingering server process from a previous abnormal termination
+    fn cleanup_stale_pid() {
+        let Some(pid_file) = Self::pid_file_path() else { return; };
+        if let Ok(content) = std::fs::read_to_string(&pid_file) {
+            if let Ok(pid) = content.trim().parse::<i32>() {
+                #[cfg(target_os = "linux")]
+                unsafe {
+                    // Check if process is alive
+                    if libc::kill(pid, 0) == 0 {
+                        // If it's listening and responsive, we can let it be or cleanly terminate it if stale
+                        if !Self::is_server_listening() {
+                            println!("[Tauri] Cleaning up stale unresponsive streaming server PID: {}", pid);
+                            libc::kill(pid, libc::SIGTERM);
+                            std::thread::sleep(Duration::from_millis(150));
+                            if libc::kill(pid, 0) == 0 {
+                                libc::kill(pid, libc::SIGKILL);
+                            }
+                        }
+                    }
+                }
+                #[cfg(not(target_os = "linux"))]
+                let _ = pid;
+            }
+            let _ = std::fs::remove_file(&pid_file);
+        }
+    }
+
     /// Start the bundled streaming server if not already running
     pub fn start(&self) {
         if Self::is_server_listening() {
-            println!("[Tauri] Stremio Streaming Server is already active on 127.0.0.1:11470.");
+            println!("[Tauri] Streaming Server is already active and responsive on 127.0.0.1:11470.");
             return;
         }
+
+        Self::cleanup_stale_pid();
 
         let Some(server_path) = Self::find_server_path() else {
             eprintln!("[Tauri] Could not locate server/server.js. Run './scripts/download-server.sh' first.");
@@ -109,9 +146,11 @@ impl ServerManager {
             return;
         };
 
-        println!("[Tauri] Spawning streaming server with {:?} at {:?}", node_bin, server_path);
+        println!("[Tauri] Spawning optimized streaming server with {:?} at {:?}", node_bin, server_path);
 
         let mut cmd = Command::new(&node_bin);
+
+        // High-performance environment tuning
         cmd.env("UV_THREADPOOL_SIZE", "32")
             .env("NODE_ENV", "production")
             .env("NO_CORS", "1");
@@ -134,45 +173,115 @@ impl ServerManager {
             cmd.env("FFPROBE_BIN", "/usr/bin/ffprobe");
         }
 
+        // V8 runtime performance flags:
+        // - --max-old-space-size=4096: Sufficient memory ceiling for high-bitrate 4K streaming caches
+        // - --turbo-fast-api-calls: Enable fast V8 C++ API calls
+        // - --no-warnings: Suppress node warning stderr overhead
         cmd.arg("--max-old-space-size=4096")
+            .arg("--turbo-fast-api-calls")
             .arg("--no-warnings")
             .arg(&server_path)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit());
 
+        // On Linux, use prctl PR_SET_PDEATHSIG to guarantee the child receives SIGTERM
+        // if the parent Tauri process exits, crashes, or is killed.
+        #[cfg(target_os = "linux")]
+        unsafe {
+            cmd.pre_exec(|| {
+                if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM) != 0 {
+                    return Err(std::io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+
         match cmd.spawn() {
             Ok(child_process) => {
+                let child_pid = child_process.id();
+                if let Some(pid_file) = Self::pid_file_path() {
+                    let _ = std::fs::write(pid_file, child_pid.to_string());
+                }
+
                 let mut guard = self.child.lock().unwrap();
                 *guard = Some(child_process);
-                println!("[Tauri] Embedded streaming server spawned.");
+                println!("[Tauri] Streaming server spawned with PID: {}.", child_pid);
             }
             Err(err) => {
                 eprintln!("[Tauri] Failed to spawn streaming server: {err}.");
+                return;
             }
         }
 
-        // Wait synchronously until the server is ready and accepting requests on 127.0.0.1:11470
+        // Fast-poll loop (25ms intervals) for minimum launch latency
         println!("[Tauri] Waiting for streaming server on 127.0.0.1:11470...");
-        let start_time = std::time::Instant::now();
+        let start_time = Instant::now();
         let timeout = Duration::from_secs(5);
         while start_time.elapsed() < timeout {
             if Self::is_server_listening() {
-                println!("[Tauri] Streaming server is online and ready on 127.0.0.1:11470 (took {:?}).", start_time.elapsed());
+                println!("[Tauri] Streaming server online and accepting streams on 127.0.0.1:11470 (took {:?}).", start_time.elapsed());
                 return;
             }
-            std::thread::sleep(Duration::from_millis(100));
+            std::thread::sleep(Duration::from_millis(25));
         }
         eprintln!("[Tauri] Warning: streaming server did not respond within {:?}", timeout);
     }
 
-    /// Terminate the child process cleanly
+    /// Terminate the child process cleanly with graceful SIGTERM escalation to SIGKILL
     pub fn stop(&self) {
-        let mut guard = self.child.lock().unwrap();
+        let mut guard = match self.child.lock() {
+            Ok(g) => g,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+
         if let Some(mut child) = guard.take() {
-            println!("[Tauri] Stopping embedded streaming server child process...");
+            let pid = child.id();
+            println!("[Tauri] Requesting graceful termination of streaming server (PID: {})...", pid);
+
+            #[cfg(target_os = "linux")]
+            unsafe {
+                // Send SIGTERM to allow server.js to write state/flush caches cleanly
+                libc::kill(pid as libc::pid_t, libc::SIGTERM);
+            }
+
+            #[cfg(not(target_os = "linux"))]
             let _ = child.kill();
-            let _ = child.wait();
-            println!("[Tauri] Embedded streaming server child terminated.");
+
+            // Wait up to 1.2s for graceful exit
+            let wait_start = Instant::now();
+            let graceful_limit = Duration::from_millis(1200);
+            let mut exited = false;
+
+            while wait_start.elapsed() < graceful_limit {
+                match child.try_wait() {
+                    Ok(Some(status)) => {
+                        println!("[Tauri] Streaming server exited gracefully with status: {:?}.", status);
+                        exited = true;
+                        break;
+                    }
+                    Ok(None) => {
+                        std::thread::sleep(Duration::from_millis(20));
+                    }
+                    Err(err) => {
+                        eprintln!("[Tauri] Error waiting on server child: {:?}.", err);
+                        break;
+                    }
+                }
+            }
+
+            // Escalate to SIGKILL if child didn't exit within graceful window
+            if !exited {
+                println!("[Tauri] Child did not exit within graceful timeout; escalating to SIGKILL...");
+                let _ = child.kill();
+                let _ = child.wait();
+            }
+
+            // Remove PID file
+            if let Some(pid_file) = Self::pid_file_path() {
+                let _ = std::fs::remove_file(pid_file);
+            }
+
+            println!("[Tauri] Streaming server shutdown complete.");
         }
     }
 }

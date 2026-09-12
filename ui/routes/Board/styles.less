@@ -42,15 +42,15 @@
                 padding: 3rem 1.5rem;
                 text-align: center;
                 gap: 1rem;
-                background: var(--flat-surface, rgba(255, 255, 255, 0.02));
-                border: 1px dashed var(--flat-card-border, rgba(255, 255, 255, 0.1));
-                border-radius: var(--border-radius, 0.75rem);
+                background: var(--springroll-surface-slate, #163530);
+                border: 1px dashed rgba(108, 138, 130, 0.35);
+                border-radius: 8px;
                 margin: 1.5rem 0 3rem;
 
                 .empty-title {
                     font-size: 1.125rem;
                     font-weight: 600;
-                    color: var(--stremio-color-text, #ffffff);
+                    color: var(--springroll-crisp-paper, #F8F9FA);
                 }
 
                 .empty-action-btn {
@@ -59,16 +59,16 @@
                     align-items: center;
                     gap: 0.5rem;
                     padding: 0.625rem 1.25rem;
-                    background: var(--stremio-color-accent, #6366f1);
-                    color: #ffffff;
-                    border-radius: 9999px;
+                    background: var(--springroll-mint, #00C49F);
+                    color: var(--springroll-deep-sea, #0B221E);
+                    border-radius: 8px;
                     font-size: 0.875rem;
-                    font-weight: 600;
+                    font-weight: 700;
                     text-decoration: none;
-                    transition: opacity 0.2s;
+                    transition: background-color 0.14s ease-in-out;
 
                     &:hover {
-                        opacity: 0.9;
+                        background-color: var(--springroll-mint-hover, #1AE0B9);
                     }
                 }
             }

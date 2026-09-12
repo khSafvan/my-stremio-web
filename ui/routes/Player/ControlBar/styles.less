@@ -26,25 +26,31 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 0.75rem;
-            transition: background-color 150ms ease;
+            border-radius: 8px;
+            transition: background-color 140ms ease;
 
             &:hover:not(:global(.disabled)) {
-                background-color: var(--overlay-color);
+                background-color: var(--springroll-surface-slate, #163530);
+
+                .icon {
+                    color: var(--springroll-mint, #00c49f);
+                }
             }
 
             &:global(.disabled) {
                 .icon {
-                    opacity: 0.4;
+                    opacity: 0.35;
                 }
             }
 
             .icon {
                 flex: none;
-                width: 2.2rem;
-                height: 2.2rem;
+                width: 2rem;
+                height: 2rem;
                 color: var(--primary-foreground-color);
-                transition: transform 100ms ease;
+                transition:
+                    transform 100ms ease,
+                    color 140ms ease;
             }
         }
 
@@ -124,7 +130,8 @@
                 max-width: calc(100dvw - 1rem);
                 border-radius: var(--border-radius);
                 background-color: var(--modal-background-color);
-                box-shadow: 0 1.35rem 2.7rem @color-background-dark5-40,
+                box-shadow:
+                    0 1.35rem 2.7rem @color-background-dark5-40,
                     0 1.1rem 0.85rem @color-background-dark5-20;
                 overflow-x: auto;
 

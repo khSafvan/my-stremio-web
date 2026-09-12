@@ -2,24 +2,43 @@
 
 @import './variables.less';
 
-// Theme CSS Custom Properties (Variables) - Modern Flat Aesthetics
+// Theme CSS Custom Properties (Variables) - Springroll Flat Modern Aesthetics
 :root {
-    // Brand & Theme Colors (Flat)
-    --stremio-color-primary: #7b5bf5;
-    --stremio-color-primary-hover: #8f72ff;
-    --stremio-color-primary-dim: rgba(123, 91, 245, 0.16);
-    --stremio-color-background: #0b0c10;
-    --stremio-color-surface: #12141c;
-    --stremio-color-surface-elevated: #181b26;
-    --stremio-color-surface-hover: #1f2332;
-    --stremio-color-border: rgba(255, 255, 255, 0.08);
-    --stremio-color-border-subtle: rgba(255, 255, 255, 0.04);
-    --stremio-color-border-accent: rgba(123, 91, 245, 0.5);
+    // Springroll Palette Custom Properties
+    --springroll-mint: #00c49f;
+    --springroll-mint-hover: #1ae0b9;
+    --springroll-deep-sea: #0b221e;
+    --springroll-surface-slate: #163530;
+    --springroll-surface-slate-hover: #1f453f;
+    --springroll-warm-gold: #f4d06f;
+    --springroll-crisp-paper: #f8f9fa;
+    --springroll-muted-sage: #6c8a82;
+
+    // Brand & Theme Colors (Flat, Zero Drop-Shadow)
+    --stremio-color-primary: #00c49f;
+    --stremio-color-primary-hover: #1ae0b9;
+    --stremio-color-primary-dim: rgba(0, 196, 159, 0.16);
+    --stremio-color-accent: #00c49f;
+    --stremio-color-background: #0b221e;
+    --stremio-color-surface: #163530;
+    --stremio-color-surface-elevated: #163530;
+    --stremio-color-surface-hover: #1f453f;
+    --stremio-color-border: rgba(108, 138, 130, 0.3);
+    --stremio-color-border-subtle: rgba(108, 138, 130, 0.15);
+    --stremio-color-border-accent: #00c49f;
 
     // Text Colors
-    --stremio-text-primary: #ffffff;
-    --stremio-text-secondary: rgba(255, 255, 255, 0.72);
-    --stremio-text-muted: rgba(255, 255, 255, 0.44);
+    --stremio-text-primary: #f8f9fa;
+    --stremio-text-secondary: #6c8a82;
+    --stremio-text-muted: #6c8a82;
+
+    // Typography Architecture (Plus Jakarta Sans, Inter, JetBrains Mono)
+    --font-family-title: @font-family-title;
+    --font-family-body: @font-family-body;
+    --font-family-mono: @font-family-mono;
+    --font-title: var(--font-family-title);
+    --font-body: var(--font-family-body);
+    --font-mono: var(--font-family-mono);
 
     // Spacing
     --spacing-xs: @spacing-xs;
@@ -29,19 +48,19 @@
     --spacing-xl: @spacing-xl;
     --spacing-2xl: @spacing-2xl;
 
-    // Radius (Flat & Modern)
+    // Radius (Strict 8px / 12px Flat Geometry)
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
     --radius-full: 9999px;
 
-    // Flat UI Components
-    --flat-card-border: 1px solid rgba(255, 255, 255, 0.08);
-    --flat-card-border-hover: 1px solid rgba(123, 91, 245, 0.8);
-    --flat-card-bg: #12141c;
-    --flat-pill-bg: rgba(255, 255, 255, 0.06);
-    --flat-pill-bg-active: #7b5bf5;
-    --flat-pill-border: 1px solid rgba(255, 255, 255, 0.08);
+    // Flat UI Components (Solid color-blocking, zero drop-shadow)
+    --flat-card-border: 1px solid rgba(108, 138, 130, 0.25);
+    --flat-card-border-hover: 2px solid #00c49f;
+    --flat-card-bg: #163530;
+    --flat-pill-bg: #163530;
+    --flat-pill-bg-active: #00c49f;
+    --flat-pill-border: 1px solid rgba(108, 138, 130, 0.35);
 
     // Z-Index Tokens
     --z-dropdown: @z-index-dropdown;

@@ -31,14 +31,14 @@ if [ ! -f "${SERVER_FILE}" ]; then
     "${SCRIPT_DIR}/download-server.sh"
 fi
 
-# Auto-detect Bun or Node runtime
+# Auto-detect Node or Bun runtime (Node preferred for complete streaming duplex pipeline compatibility)
 JS_RUNNER=""
-if command -v bun >/dev/null 2>&1; then
-    JS_RUNNER="bun"
-elif command -v node >/dev/null 2>&1; then
+if command -v node >/dev/null 2>&1; then
     JS_RUNNER="node"
+elif command -v bun >/dev/null 2>&1; then
+    JS_RUNNER="bun"
 else
-    echo "Error: Bun or Node.js is required to execute the streaming server." >&2
+    echo "Error: Node.js or Bun is required to execute the streaming server." >&2
     exit 1
 fi
 
@@ -55,7 +55,14 @@ if command -v ffprobe >/dev/null 2>&1; then
     export FFPROBE_BIN="${FFPROBE_BIN:-$(command -v ffprobe)}"
 fi
 
-echo "==> Launching Tuned Stremio Streaming Server via ${JS_RUNNER} on 127.0.0.1:11470..."
+PID_FILE="${PROJECT_ROOT}/server/server.pid"
+
+cleanup() {
+    rm -f "${PID_FILE}" 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
+echo "==> Launching Tuned Springroll Streaming Server via ${JS_RUNNER} on 127.0.0.1:11470..."
 echo "    • Runtime: ${JS_RUNNER}"
 echo "    • Threadpool: ${UV_THREADPOOL_SIZE} workers"
 echo "    • Max Heap: 4096 MB"
@@ -63,7 +70,9 @@ echo "    • Settings: ${SETTINGS_PATH}/server-settings.json"
 echo "    • FFmpeg: ${FFMPEG_BIN:-bundled}"
 
 if [ "${JS_RUNNER}" = "bun" ]; then
+    echo "$$" > "${PID_FILE}"
     exec bun "${SERVER_FILE}"
 else
-    exec node --max-old-space-size=4096 --no-warnings "${SERVER_FILE}"
+    echo "$$" > "${PID_FILE}"
+    exec node --max-old-space-size=4096 --turbo-fast-api-calls --no-warnings "${SERVER_FILE}"
 fi

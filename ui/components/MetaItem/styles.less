@@ -20,7 +20,10 @@
     padding: 1rem;
     overflow: visible;
 
-    &:hover, &:focus-within, &:global(.active), &:global(.selected) {
+    &:hover,
+    &:focus-within,
+    &:global(.active),
+    &:global(.selected) {
         outline-style: none;
         transition: background-color 100ms ease-out;
 
@@ -83,6 +86,22 @@
     &.poster-shape-landscape {
         .poster-container {
             padding-top: calc(100% * var(--landscape-shape-ratio));
+
+            .progress-bar-layer {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 0.35rem;
+                border-radius: 0;
+
+                .progress-bar {
+                    background-color: var(--springroll-mint, #00c49f);
+                }
+
+                .progress-bar-background {
+                    background-color: rgba(11, 34, 30, 0.75);
+                }
+            }
         }
     }
 
@@ -100,7 +119,9 @@
         background-color: var(--overlay-color);
         border-radius: var(--border-radius);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        transition: scale 100ms ease-out, border-color 150ms ease-out;
+        transition:
+            scale 100ms ease-out,
+            border-color 150ms ease-out;
 
         &:global(.poster-change-cursor) {
             .poster-image-layer {
@@ -265,7 +286,7 @@
                 height: 100%;
                 background-color: var(--primary-foreground-color);
             }
-            
+
             .progress-bar-background {
                 position: absolute;
                 top: 0;
@@ -345,13 +366,20 @@
         .title-label {
             flex: 1;
             padding-left: 1.5rem;
+            font-family: var(
+                --font-family-title,
+                'Plus Jakarta Sans',
+                sans-serif
+            );
             font-weight: 600;
+            letter-spacing: 0.01em;
             text-align: center;
             color: var(--primary-foreground-color);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            text-overflow: ellipsis;
 
             &:only-child {
                 padding: 0 0.5rem;
@@ -391,7 +419,8 @@
                 .multiselect-option-container {
                     padding: 1rem 1.5rem;
 
-                    &:hover, &:focus {
+                    &:hover,
+                    &:focus {
                         outline: none;
                         background-color: var(--overlay-color);
                     }

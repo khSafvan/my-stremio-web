@@ -1,5 +1,13 @@
 // Copyright (C) 2017-2026 Smart code 203358507
 
+// Springroll Category Pills - Flat Design System
+@springroll-mint: #00C49F;
+@springroll-deep-sea: #0B221E;
+@springroll-surface-slate: #163530;
+@springroll-surface-slate-hover: #1F453F;
+@springroll-crisp-paper: #F8F9FA;
+@springroll-muted-sage: #6C8A82;
+
 .category-pills-wrapper {
     position: relative;
     width: 100%;
@@ -12,7 +20,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
@@ -30,34 +38,40 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1.125rem;
-    border-radius: 9999px;
-    background: var(--flat-surface-raised, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--flat-card-border, rgba(255, 255, 255, 0.1));
-    color: var(--stremio-color-text-secondary, #9da3af);
+    border-radius: 8px;
+    background: @springroll-surface-slate;
+    border: 1px solid rgba(108, 138, 130, 0.35);
+    color: @springroll-muted-sage;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     outline: none;
     user-select: none;
-    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.12s ease-in-out, border-color 0.12s ease-in-out, color 0.12s ease-in-out;
 
     &:hover {
-        background: var(--flat-pill-hover, rgba(255, 255, 255, 0.08));
-        border-color: rgba(255, 255, 255, 0.2);
-        color: #ffffff;
+        background: @springroll-surface-slate-hover;
+        border-color: rgba(108, 138, 130, 0.6);
+        color: @springroll-crisp-paper;
     }
 
     &:focus-visible {
-        border-color: var(--stremio-color-accent, #6366f1);
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+        border-color: @springroll-mint;
+        outline: 2px solid @springroll-mint;
+        outline-offset: 1px;
     }
 
     &.selected {
-        background: var(--stremio-color-accent, #6366f1);
-        border-color: var(--stremio-color-accent, #6366f1);
-        color: #ffffff;
-        font-weight: 600;
+        background: @springroll-mint;
+        border-color: @springroll-mint;
+        color: @springroll-deep-sea;
+        font-weight: 700;
+        box-shadow: none;
+
+        .pill-icon {
+            fill: @springroll-deep-sea;
+        }
     }
 }
 

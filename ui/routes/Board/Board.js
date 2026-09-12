@@ -3,9 +3,24 @@
 const React = require('react');
 const classnames = require('classnames');
 const useTranslate = require('stremio/common/useTranslate');
-const { default: useVisibleCatalogs } = require('stremio/common/useVisibleCatalogs');
-const { useStreamingServer, useNotifications, withCoreSuspender, useProfile } = require('stremio/common');
-const { Button, ContinueWatchingItem, EventModal, LibItem, MainNavBars, MetaItem, MetaRow } = require('stremio/components');
+const {
+    default: useVisibleCatalogs
+} = require('stremio/common/useVisibleCatalogs');
+const {
+    useStreamingServer,
+    useNotifications,
+    withCoreSuspender,
+    useProfile
+} = require('stremio/common');
+const {
+    Button,
+    ContinueWatchingItem,
+    EventModal,
+    LibItem,
+    MainNavBars,
+    MetaItem,
+    MetaRow
+} = require('stremio/components');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const useBoard = require('./useBoard');
 const useContinueWatchingPreview = require('./useContinueWatchingPreview');
@@ -28,9 +43,15 @@ const Board = () => {
     const [selectedCategory, setSelectedCategory] = React.useState('all');
 
     const showStreamingServerWarning = React.useMemo(() => {
-        return streamingServer.settings !== null && streamingServer.settings.type === 'Err' && (
-            isNaN(profile.settings.streamingServerWarningDismissed.getTime()) ||
-            profile.settings.streamingServerWarningDismissed.getTime() < Date.now());
+        return (
+            streamingServer.settings !== null &&
+            streamingServer.settings.type === 'Err' &&
+            (isNaN(
+                profile.settings.streamingServerWarningDismissed.getTime()
+            ) ||
+                profile.settings.streamingServerWarningDismissed.getTime() <
+                    Date.now())
+        );
     }, [profile.settings, streamingServer.settings]);
 
     // Derive new episodes shelf from library items with active notification counts
@@ -61,16 +82,21 @@ const Board = () => {
     const boardCatalogsOffset = React.useMemo(() => {
         let count = 2;
         if (continueWatchingPreview.items.length > 0) count += 1;
-        if (newEpisodesCatalog && newEpisodesCatalog.items.length > 0) count += 1;
+        if (newEpisodesCatalog && newEpisodesCatalog.items.length > 0)
+            count += 1;
         if (libraryCatalog && libraryCatalog.items.length > 0) count += 1;
         return count;
-    }, [continueWatchingPreview.items.length, newEpisodesCatalog, libraryCatalog]);
+    }, [
+        continueWatchingPreview.items.length,
+        newEpisodesCatalog,
+        libraryCatalog
+    ]);
 
     const { catalogRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
         catalogs: board.catalogs,
         loadRange: loadBoardRows,
         leadingRows: boardCatalogsOffset,
-        preloadRows: THRESHOLD,
+        preloadRows: THRESHOLD
     });
 
     // Filter catalog rows according to selected category pill
@@ -82,32 +108,57 @@ const Board = () => {
             if (catalog.type === selectedCategory) {
                 return true;
             }
-            if (catalog.content?.type === 'Ready' && Array.isArray(catalog.content.content)) {
-                return catalog.content.content.some((item) => item.type === selectedCategory);
+            if (
+                catalog.content?.type === 'Ready' &&
+                Array.isArray(catalog.content.content)
+            ) {
+                return catalog.content.content.some(
+                    (item) => item.type === selectedCategory
+                );
             }
             return false;
         });
     }, [catalogRows, selectedCategory]);
 
     const discoverUrl = React.useMemo(() => {
-        return selectedCategory === 'all' ? '#/discover' : `#/discover/${selectedCategory}`;
+        return selectedCategory === 'all'
+            ? '#/discover'
+            : `#/discover/${selectedCategory}`;
     }, [selectedCategory]);
 
     return (
         <div className={styles['board-container']}>
             <EventModal />
-            <MainNavBars className={styles['board-content-container']} route={'board'}>
-                <div ref={scrollContainerRef} className={styles['board-content']} onScroll={onScroll}>
+            <MainNavBars
+                className={styles['board-content-container']}
+                route={'board'}
+            >
+                <div
+                    ref={scrollContainerRef}
+                    className={styles['board-content']}
+                    onScroll={onScroll}
+                >
                     {/* 1. Cinematic Hero Banner Carousel */}
                     <HeroBanner
                         catalogs={catalogRows}
                         continueWatching={continueWatchingPreview}
+                        library={libraryCatalog}
                     />
 
-                    {/* 2. Continue Watching Shelf */}
+                    {/* 2. Flat Category & Quick Filter Pills */}
+                    <CategoryPills
+                        selected={selectedCategory}
+                        onSelect={setSelectedCategory}
+                    />
+
+                    {/* 3. Continue Watching Shelf (16:9 Landscape) */}
                     {continueWatchingPreview.items.length > 0 ? (
                         <MetaRow
-                            className={classnames(styles['board-row'], styles['continue-watching-row'], 'animation-fade-in')}
+                            className={classnames(
+                                styles['board-row'],
+                                styles['board-row-landscape'],
+                                'animation-fade-in'
+                            )}
                             title={t.string('BOARD_CONTINUE_WATCHING')}
                             catalog={continueWatchingPreview}
                             itemComponent={ContinueWatchingItem}
@@ -115,33 +166,44 @@ const Board = () => {
                         />
                     ) : null}
 
-                    {/* 3. New Episodes Shelf */}
-                    {newEpisodesCatalog && newEpisodesCatalog.items.length > 0 ? (
-                        <MetaRow
-                            className={classnames(styles['board-row'], styles['board-row-poster'], 'animation-fade-in')}
-                            title={t.stringWithPrefix('NewEpisodes', '', 'New Episodes')}
-                            catalog={newEpisodesCatalog}
-                            itemComponent={LibItem}
-                            notifications={notifications}
-                        />
-                    ) : null}
-
-                    {/* 4. Your Library Shelf */}
+                    {/* 4. Your Watchlist / Library Shelf */}
                     {libraryCatalog && libraryCatalog.items.length > 0 ? (
                         <MetaRow
-                            className={classnames(styles['board-row'], styles['board-row-poster'], 'animation-fade-in')}
-                            title={t.stringWithPrefix('Library', '', 'Your Library')}
+                            className={classnames(
+                                styles['board-row'],
+                                styles['board-row-poster'],
+                                'animation-fade-in'
+                            )}
+                            title={t.stringWithPrefix(
+                                'Library',
+                                '',
+                                'Your Watchlist'
+                            )}
                             catalog={libraryCatalog}
                             itemComponent={LibItem}
                             notifications={notifications}
                         />
                     ) : null}
 
-                    {/* 5. Flat Category & Quick Filter Pills */}
-                    <CategoryPills
-                        selected={selectedCategory}
-                        onSelect={setSelectedCategory}
-                    />
+                    {/* 5. New Episodes Shelf */}
+                    {newEpisodesCatalog &&
+                    newEpisodesCatalog.items.length > 0 ? (
+                        <MetaRow
+                            className={classnames(
+                                styles['board-row'],
+                                styles['board-row-poster'],
+                                'animation-fade-in'
+                            )}
+                            title={t.stringWithPrefix(
+                                'NewEpisodes',
+                                '',
+                                'New Episodes'
+                            )}
+                            catalog={newEpisodesCatalog}
+                            itemComponent={LibItem}
+                            notifications={notifications}
+                        />
+                    ) : null}
 
                     {/* 6. Dynamic Catalogs */}
                     {filteredCatalogRows.map(({ catalog, index }) => {
@@ -150,18 +212,29 @@ const Board = () => {
                                 return (
                                     <MetaRow
                                         key={index}
-                                        className={classnames(styles['board-row'], styles[`board-row-${catalog.content.content[0].posterShape}`], 'animation-fade-in')}
+                                        className={classnames(
+                                            styles['board-row'],
+                                            styles[
+                                                `board-row-${catalog.content.content[0].posterShape}`
+                                            ],
+                                            'animation-fade-in'
+                                        )}
                                         catalog={catalog}
                                         itemComponent={MetaItem}
                                     />
                                 );
                             }
                             case 'Err': {
-                                if (catalog.content.content !== 'EmptyContent') {
+                                if (
+                                    catalog.content.content !== 'EmptyContent'
+                                ) {
                                     return (
                                         <MetaRow
                                             key={index}
-                                            className={classnames(styles['board-row'], 'animation-fade-in')}
+                                            className={classnames(
+                                                styles['board-row'],
+                                                'animation-fade-in'
+                                            )}
                                             catalog={catalog}
                                             message={catalog.content.content}
                                         />
@@ -173,7 +246,11 @@ const Board = () => {
                                 return (
                                     <MetaRow.Placeholder
                                         key={index}
-                                        className={classnames(styles['board-row'], styles['board-row-poster'], 'animation-fade-in')}
+                                        className={classnames(
+                                            styles['board-row'],
+                                            styles['board-row-poster'],
+                                            'animation-fade-in'
+                                        )}
                                         catalog={catalog}
                                         title={t.catalogTitle(catalog)}
                                     />
@@ -183,7 +260,8 @@ const Board = () => {
                     })}
 
                     {/* Fallback exploration card when filtered category has no immediate rows */}
-                    {selectedCategory !== 'all' && filteredCatalogRows.length === 0 ? (
+                    {selectedCategory !== 'all' &&
+                    filteredCatalogRows.length === 0 ? (
                         <div className={styles['category-empty-state']}>
                             <div className={styles['empty-title']}>
                                 {t.stringWithPrefix(selectedCategory, 'TYPE_')}
@@ -200,7 +278,9 @@ const Board = () => {
                 </div>
             </MainNavBars>
             {showStreamingServerWarning ? (
-                <StreamingServerWarning className={styles['board-warning-container']} />
+                <StreamingServerWarning
+                    className={styles['board-warning-container']}
+                />
             ) : null}
         </div>
     );
@@ -208,7 +288,10 @@ const Board = () => {
 
 const BoardFallback = () => (
     <div className={styles['board-container']}>
-        <MainNavBars className={styles['board-content-container']} route={'board'} />
+        <MainNavBars
+            className={styles['board-content-container']}
+            route={'board'}
+        />
     </div>
 );
 

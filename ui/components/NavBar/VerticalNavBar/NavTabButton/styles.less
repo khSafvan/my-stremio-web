@@ -9,18 +9,26 @@
     align-items: center;
     justify-content: center;
     background-color: transparent;
-    border-radius: 0.75rem;
+    border-radius: 8px;
+    transition: background-color 140ms ease-in-out;
 
     @media (pointer: fine) {
         &:hover {
-            background-color: var(--overlay-color);
+            background-color: var(--springroll-surface-slate, #163530);
+
+            .icon {
+                color: var(--springroll-crisp-paper, #f8f9fa);
+                opacity: 1;
+            }
 
             .label {
-                opacity: 0.6;
+                opacity: 0.85;
             }
 
             &:global(.selected) {
+                .icon,
                 .label {
+                    color: var(--springroll-mint, #00c49f);
                     opacity: 1;
                 }
             }
@@ -28,25 +36,33 @@
     }
 
     &:global(.selected) {
+        background-color: rgba(0, 196, 159, 0.1);
+
         .icon {
             opacity: 1;
+            color: var(--springroll-mint, #00c49f);
         }
 
-        .icon, .label {
-            color: var(--primary-accent-color);
+        .label {
+            color: var(--springroll-mint, #00c49f);
+            font-weight: 700;
         }
     }
 
-    .icon, .logo {
+    .icon,
+    .logo {
         flex: none;
-        width: 2.2rem;
-        height: 2.2rem;
-        margin-bottom: 0.5rem;
+        width: 1.5rem; // 24px Lucide standard
+        height: 1.5rem;
+        margin-bottom: 0.4rem;
     }
 
     .icon {
-        color: var(--primary-foreground-color);
-        opacity: 0.35;
+        color: var(--springroll-muted-sage, #6c8a82);
+        opacity: 0.85;
+        transition:
+            color 140ms ease-in-out,
+            opacity 140ms ease-in-out;
     }
 
     .label {
@@ -55,15 +71,19 @@
         max-width: 100%;
         max-height: 2.4em;
         padding: 0 0.5rem;
-        font-size: 0.8rem;
-        font-weight: 500;
-        letter-spacing: 0.01rem;
+        font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
         text-align: center;
         white-space: nowrap;
         text-overflow: ellipsis;
-        color: var(--primary-foreground-color);
+        color: var(--springroll-muted-sage, #6c8a82);
         opacity: 0;
         overflow: hidden;
+        transition:
+            color 140ms ease-in-out,
+            opacity 140ms ease-in-out;
     }
 }
 
