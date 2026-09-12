@@ -78,19 +78,14 @@ const Board = () => {
     }, [libraryCatalog?.items, notifications?.items]);
 
     // Leading rows for visible catalogs virtualization calculation:
-    // 1 (HeroBanner) + optional continue watching + optional new episodes + optional library + 1 (CategoryPills)
+    // 1 (HeroBanner) + continue watching (1) + optional new episodes + optional library + 1 (CategoryPills)
     const boardCatalogsOffset = React.useMemo(() => {
-        let count = 2;
-        if (continueWatchingPreview.items.length > 0) count += 1;
+        let count = 3;
         if (newEpisodesCatalog && newEpisodesCatalog.items.length > 0)
             count += 1;
         if (libraryCatalog && libraryCatalog.items.length > 0) count += 1;
         return count;
-    }, [
-        continueWatchingPreview.items.length,
-        newEpisodesCatalog,
-        libraryCatalog
-    ]);
+    }, [newEpisodesCatalog, libraryCatalog]);
 
     const { catalogRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
         catalogs: board.catalogs,
@@ -163,8 +158,47 @@ const Board = () => {
                             catalog={continueWatchingPreview}
                             itemComponent={ContinueWatchingItem}
                             notifications={notifications}
+                            posterShape={'landscape'}
                         />
-                    ) : null}
+                    ) : (
+                        <div
+                            className={classnames(
+                                styles['board-row'],
+                                styles['continue-watching-empty-section'],
+                                'animation-fade-in'
+                            )}
+                        >
+                            <div className={styles['section-header']}>
+                                <div className={styles['section-title']}>
+                                    {t.string('BOARD_CONTINUE_WATCHING')}
+                                </div>
+                            </div>
+                            <div
+                                className={
+                                    styles['continue-watching-empty-card']
+                                }
+                            >
+                                <Icon
+                                    className={styles['empty-icon']}
+                                    name={'play'}
+                                />
+                                <div className={styles['empty-text']}>
+                                    <span className={styles['empty-headline']}>
+                                        {t.string(
+                                            'BOARD_CONTINUE_WATCHING_EMPTY'
+                                        )}
+                                    </span>
+                                    <span className={styles['empty-subtext']}>
+                                        {t.stringWithPrefix(
+                                            'ContinueWatching',
+                                            'Hint',
+                                            'Resume series and episodes with 16:9 thumbnails right from your homescreen.'
+                                        )}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* 4. Your Watchlist / Library Shelf */}
                     {libraryCatalog && libraryCatalog.items.length > 0 ? (

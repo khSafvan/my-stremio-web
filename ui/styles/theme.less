@@ -4,33 +4,55 @@
 
 // Theme CSS Custom Properties (Variables) - Springroll Flat Modern Aesthetics
 :root {
-    // Springroll Palette Custom Properties
-    --springroll-mint: #00c49f;
-    --springroll-mint-hover: #1ae0b9;
-    --springroll-deep-sea: #0b221e;
-    --springroll-surface-slate: #163530;
-    --springroll-surface-slate-hover: #1f453f;
-    --springroll-warm-gold: #f4d06f;
-    --springroll-crisp-paper: #f8f9fa;
-    --springroll-muted-sage: #6c8a82;
+    // Crispyroll / Springroll Palette Custom Properties
+    --cr-canvas: #0d0d11;
+    --cr-surface-1: #17171e;
+    --cr-surface-2: #21212b;
+    --cr-surface-3: #2b2b38;
+    --cr-border: #2c2c3a;
+    --cr-accent: #ff6600;
+    --cr-accent-hover: #ff7a1a;
+    --cr-text-primary: #ededf2;
+    --cr-text-secondary: #8f8fa0;
+    --cr-text-muted: #5e5e6e;
 
-    // Brand & Theme Colors (Flat, Zero Drop-Shadow)
-    --stremio-color-primary: #00c49f;
-    --stremio-color-primary-hover: #1ae0b9;
-    --stremio-color-primary-dim: rgba(0, 196, 159, 0.16);
-    --stremio-color-accent: #00c49f;
-    --stremio-color-background: #0b221e;
-    --stremio-color-surface: #163530;
-    --stremio-color-surface-elevated: #163530;
-    --stremio-color-surface-hover: #1f453f;
-    --stremio-color-border: rgba(108, 138, 130, 0.3);
-    --stremio-color-border-subtle: rgba(108, 138, 130, 0.15);
-    --stremio-color-border-accent: #00c49f;
+    // Springroll Aliases
+    --springroll-mint: #ff6600;
+    --springroll-mint-hover: #ff7a1a;
+    --springroll-deep-sea: #0d0d11;
+    --springroll-surface-slate: #17171e;
+    --springroll-surface-slate-hover: #21212b;
+    --springroll-warm-gold: #ffc107;
+    --springroll-crisp-paper: #ededf2;
+    --springroll-muted-sage: #8f8fa0;
+
+    // Brand & Theme Colors (Crispyroll Modern Charcoal & Fiery Ember)
+    --stremio-color-primary: #ff6600;
+    --stremio-color-primary-hover: #ff7a1a;
+    --stremio-color-primary-dim: rgba(255, 102, 0, 0.16);
+    --stremio-color-accent: #ff6600;
+    --stremio-color-background: #0d0d11;
+    --stremio-color-surface: #17171e;
+    --stremio-color-surface-elevated: #21212b;
+    --stremio-color-surface-hover: #2b2b38;
+    --stremio-color-border: #2c2c3a;
+    --stremio-color-border-subtle: rgba(44, 44, 58, 0.6);
+    --stremio-color-border-accent: #ff6600;
+
+    // Stremio Standard Properties
+    --primary-background-color: #0d0d11;
+    --secondary-background-color: #17171e;
+    --primary-foreground-color: #ededf2;
+    --secondary-foreground-color: #8f8fa0;
+    --primary-accent-color: #ff6600;
+    --secondary-accent-color: #ffaa00;
+    --modal-background-color: #21212b;
+    --overlay-color: rgba(255, 255, 255, 0.05);
 
     // Text Colors
-    --stremio-text-primary: #f8f9fa;
-    --stremio-text-secondary: #6c8a82;
-    --stremio-text-muted: #6c8a82;
+    --stremio-text-primary: #ededf2;
+    --stremio-text-secondary: #8f8fa0;
+    --stremio-text-muted: #5e5e6e;
 
     // Typography Architecture (Plus Jakarta Sans, Inter, JetBrains Mono)
     --font-family-title: @font-family-title;
@@ -55,12 +77,12 @@
     --radius-full: 9999px;
 
     // Flat UI Components (Solid color-blocking, zero drop-shadow)
-    --flat-card-border: 1px solid rgba(108, 138, 130, 0.25);
-    --flat-card-border-hover: 2px solid #00c49f;
-    --flat-card-bg: #163530;
-    --flat-pill-bg: #163530;
-    --flat-pill-bg-active: #00c49f;
-    --flat-pill-border: 1px solid rgba(108, 138, 130, 0.35);
+    --flat-card-border: 1px solid #2c2c3a;
+    --flat-card-border-hover: 2px solid #ff6600;
+    --flat-card-bg: #17171e;
+    --flat-pill-bg: #17171e;
+    --flat-pill-bg-active: #ff6600;
+    --flat-pill-border: 1px solid #2c2c3a;
 
     // Z-Index Tokens
     --z-dropdown: @z-index-dropdown;

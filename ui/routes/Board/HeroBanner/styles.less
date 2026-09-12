@@ -2,15 +2,15 @@
 
 @import (reference) '~stremio/common/screen-sizes.less';
 
-// Springroll Flat Color Tokens
-@springroll-mint: #00C49F;
-@springroll-mint-hover: #1AE0B9;
-@springroll-deep-sea: #0B221E;
-@springroll-surface-slate: #163530;
-@springroll-surface-slate-hover: #1F453F;
-@springroll-warm-gold: #F4D06F;
-@springroll-crisp-paper: #F8F9FA;
-@springroll-muted-sage: #6C8A82;
+// Crispyroll / Springroll Flat Color Tokens
+@springroll-mint: #ff6600;
+@springroll-mint-hover: #ff7a1a;
+@springroll-deep-sea: #0d0d11;
+@springroll-surface-slate: #17171e;
+@springroll-surface-slate-hover: #21212b;
+@springroll-warm-gold: #ffc107;
+@springroll-crisp-paper: #ededf2;
+@springroll-muted-sage: #8f8fa0;
 
 .hero-banner-container {
     position: relative;
@@ -21,7 +21,7 @@
     margin: 0.5rem 0 2rem 0;
     border-radius: 12px;
     background-color: @springroll-deep-sea;
-    border: 1px solid rgba(108, 138, 130, 0.25);
+    border: 1px solid #2c2c3a;
     overflow: hidden;
     display: flex;
     align-items: flex-end;
@@ -58,9 +58,9 @@
             background: linear-gradient(
                 to right,
                 @springroll-deep-sea 0%,
-                rgba(11, 34, 30, 0.96) 28%,
-                rgba(11, 34, 30, 0.78) 55%,
-                rgba(11, 34, 30, 0.25) 80%,
+                rgba(13, 13, 17, 0.96) 28%,
+                rgba(13, 13, 17, 0.78) 55%,
+                rgba(13, 13, 17, 0.25) 80%,
                 transparent 100%
             );
             pointer-events: none;
@@ -75,8 +75,8 @@
             background: linear-gradient(
                 to top,
                 @springroll-deep-sea 0%,
-                rgba(11, 34, 30, 0.85) 25%,
-                rgba(11, 34, 30, 0.3) 65%,
+                rgba(13, 13, 17, 0.85) 25%,
+                rgba(13, 13, 17, 0.3) 65%,
                 transparent 100%
             );
             pointer-events: none;
@@ -90,7 +90,7 @@
             height: 25%;
             background: linear-gradient(
                 to bottom,
-                rgba(11, 34, 30, 0.5) 0%,
+                rgba(13, 13, 17, 0.5) 0%,
                 transparent 100%
             );
             pointer-events: none;
@@ -129,7 +129,7 @@
                 letter-spacing: 0.06em;
                 color: @springroll-crisp-paper;
                 background-color: @springroll-surface-slate;
-                border: 1px solid rgba(108, 138, 130, 0.3);
+                border: 1px solid #2c2c3a;
                 padding: 0.22rem 0.55rem;
                 border-radius: 8px;
             }
@@ -138,8 +138,8 @@
                 font-size: 0.75rem;
                 font-weight: 600;
                 color: @springroll-muted-sage;
-                background-color: rgba(22, 53, 48, 0.8);
-                border: 1px solid rgba(108, 138, 130, 0.25);
+                background-color: rgba(23, 23, 30, 0.8);
+                border: 1px solid #2c2c3a;
                 padding: 0.22rem 0.55rem;
                 border-radius: 8px;
             }
@@ -148,8 +148,8 @@
                 font-size: 0.75rem;
                 font-weight: 700;
                 color: @springroll-warm-gold;
-                background-color: rgba(244, 208, 111, 0.12);
-                border: 1px solid rgba(244, 208, 111, 0.3);
+                background-color: rgba(255, 193, 7, 0.12);
+                border: 1px solid rgba(255, 193, 7, 0.3);
                 padding: 0.22rem 0.55rem;
                 border-radius: 8px;
             }
@@ -181,7 +181,7 @@
                 &:not(:last-child)::after {
                     content: '•';
                     margin-left: 0.5rem;
-                    color: rgba(108, 138, 130, 0.4);
+                    color: rgba(143, 143, 160, 0.4);
                 }
             }
         }
@@ -225,7 +225,7 @@
 
                 &.play-btn {
                     background-color: @springroll-mint;
-                    color: @springroll-deep-sea;
+                    color: #ffffff;
                     border: 1px solid @springroll-mint;
 
                     &:hover {
@@ -242,7 +242,7 @@
                 &.watchlist-btn {
                     background-color: @springroll-surface-slate;
                     color: @springroll-crisp-paper;
-                    border: 1px solid rgba(108, 138, 130, 0.35);
+                    border: 1px solid #2c2c3a;
 
                     &:hover {
                         background-color: @springroll-surface-slate-hover;
@@ -250,12 +250,12 @@
                     }
 
                     &.in-watchlist {
-                        background-color: rgba(0, 196, 159, 0.16);
+                        background-color: rgba(255, 102, 0, 0.16);
                         border-color: @springroll-mint;
                         color: @springroll-mint;
 
                         &:hover {
-                            background-color: rgba(0, 196, 159, 0.25);
+                            background-color: rgba(255, 102, 0, 0.25);
                         }
                     }
                 }
@@ -263,7 +263,7 @@
                 &.details-btn {
                     background-color: @springroll-surface-slate;
                     color: @springroll-muted-sage;
-                    border: 1px solid rgba(108, 138, 130, 0.25);
+                    border: 1px solid #2c2c3a;
 
                     &:hover {
                         background-color: @springroll-surface-slate-hover;
@@ -311,7 +311,7 @@
                 aspect-ratio: 16 / 9;
                 border-radius: 8px;
                 overflow: hidden;
-                border: 2px solid rgba(108, 138, 130, 0.35);
+                border: 2px solid #2c2c3a;
                 background-color: @springroll-surface-slate;
 
                 .preview-thumb {

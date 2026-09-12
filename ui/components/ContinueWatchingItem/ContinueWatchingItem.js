@@ -5,6 +5,38 @@ const PropTypes = require('prop-types');
 const { useCore } = require('stremio/core');
 const LibItem = require('stremio/components/LibItem');
 
+const getEpisodeSubtitle = (props) => {
+    let epTag = '';
+    if (typeof props.season === 'number' && typeof props.episode === 'number') {
+        epTag = `S${props.season} E${props.episode}`;
+    } else if (
+        typeof props.state?.season === 'number' &&
+        typeof props.state?.episode === 'number'
+    ) {
+        epTag = `S${props.state.season} E${props.state.episode}`;
+    } else if (typeof props.state?.video_id === 'string') {
+        const match = props.state.video_id.match(/:(\d+):(\d+)$/);
+        if (match) {
+            epTag = `S${match[1]} E${match[2]}`;
+        }
+    }
+
+    const title = props.episodeTitle || props.state?.title || props.videoTitle;
+    if (epTag && title) {
+        return `${epTag} • ${title}`;
+    }
+    if (epTag) {
+        return epTag;
+    }
+    if (title) {
+        return title;
+    }
+    if (props.type === 'movie') {
+        return 'Movie';
+    }
+    return '';
+};
+
 const ContinueWatchingItem = ({ _id, notifications, ...props }) => {
     const core = useCore();
 
@@ -32,6 +64,7 @@ const ContinueWatchingItem = ({ _id, notifications, ...props }) => {
     );
 
     const landscapePoster = props.thumbnail || props.background || props.poster;
+    const subtitle = React.useMemo(() => getEpisodeSubtitle(props), [props]);
 
     return (
         <LibItem
@@ -39,6 +72,7 @@ const ContinueWatchingItem = ({ _id, notifications, ...props }) => {
             _id={_id}
             poster={landscapePoster}
             posterShape={'landscape'}
+            subtitle={subtitle}
             actionMenu={true}
             posterChangeCursor={true}
             notifications={notifications}
