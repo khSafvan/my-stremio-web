@@ -25,7 +25,8 @@
         transition: background-color 100ms ease-out;
 
         .poster-container {
-            box-shadow: 0 0 0 0.2rem var(--primary-foreground-color);
+            border-color: var(--primary-accent-color);
+            box-shadow: 0 0 0 2px var(--primary-accent-color);
 
             .dismiss-icon-layer {
                 opacity: 1;
@@ -98,7 +99,8 @@
         z-index: 0;
         background-color: var(--overlay-color);
         border-radius: var(--border-radius);
-        transition: scale 100ms ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: scale 100ms ease-out, border-color 150ms ease-out;
 
         &:global(.poster-change-cursor) {
             .poster-image-layer {

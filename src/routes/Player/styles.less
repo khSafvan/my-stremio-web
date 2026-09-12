@@ -69,7 +69,7 @@ html:not(.active-slider-within) {
                 height: 8rem;
                 z-index: -1;
                 content: "";
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, transparent 100%);
+                background-color: rgba(0, 0, 0, 0.45);
                 pointer-events: none;
             }
 
@@ -111,7 +111,7 @@ html:not(.active-slider-within) {
                 height: 10rem;
                 z-index: -1;
                 content: "";
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.35) 0%, transparent 100%);
+                background-color: rgba(0, 0, 0, 0.45);
                 pointer-events: none;
             }
         }
@@ -132,9 +132,7 @@ html:not(.active-slider-within) {
             max-width: calc(100% - 4rem);
             border-radius: var(--border-radius);
             background-color: var(--modal-background-color);
-            box-shadow: 0 1.35rem 2.7rem @color-background-dark5-40,
-                0 1.1rem 0.85rem @color-background-dark5-20;
-            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: auto;
         }
 

@@ -1,10 +1,19 @@
-// Copyright (C) 2017-2023 Smart code 203358507
+// Copyright (C) 2017-2026 Smart code 203358507
 
+/**
+ * @file src/index.js
+ * Primary application entry point for Stremio Web.
+ * Initializes error monitoring, client platform heuristics, internationalization,
+ * and mounts the React root application tree with all top-level context providers.
+ */
+
+// Initialize Sentry error reporting if a DSN is provided via environment
 if (typeof process.env.SENTRY_DSN === 'string') {
     const Sentry = require('@sentry/browser');
     Sentry.init({ dsn: process.env.SENTRY_DSN });
 }
 
+// Detect client platform; disable mobile viewport restrictions on desktop environments
 const Bowser = require('bowser');
 const browser = Bowser.parse(window.navigator?.userAgent || '');
 if (browser?.platform?.type === 'desktop') {
@@ -22,10 +31,15 @@ const { default: WebUpdateScreen } = require('./App/WebUpdateScreen');
 const { CoreProvider } = require('./core');
 const { FileDropProvider, PlatformProvider } = require('./common');
 
-const translations = Object.fromEntries(Object.entries(stremioTranslations()).map(([key, value]) => [key, {
-    translation: value
-}]));
+// Map dictionary of translations into i18next resource format
+const translations = Object.fromEntries(
+    Object.entries(stremioTranslations()).map(([key, value]) => [
+        key,
+        { translation: value }
+    ])
+);
 
+// Initialize i18next internationalization engine
 i18n
     .use(initReactI18next)
     .init({
@@ -37,11 +51,16 @@ i18n
         }
     });
 
+/**
+ * Application metadata passed to the core state machine
+ * @type {{ appVersion: string | undefined, shellVersion: string | null }}
+ */
 const appInfo = {
     appVersion: process.env.VERSION,
     shellVersion: null
 };
 
+// Mount root React component into DOM
 const root = ReactDOM.createRoot(document.getElementById('app'));
 root.render(
     <React.StrictMode>
@@ -59,3 +78,4 @@ root.render(
         </PlatformProvider>
     </React.StrictMode>
 );
+

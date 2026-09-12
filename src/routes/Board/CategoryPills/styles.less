@@ -1,0 +1,73 @@
+// Copyright (C) 2017-2026 Smart code 203358507
+
+.category-pills-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0 var(--spacing-sm, 1rem);
+    box-sizing: border-box;
+}
+
+.category-pills-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.625rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.25rem 0;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.pill-button {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: 9999px;
+    background: var(--flat-surface-raised, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--flat-card-border, rgba(255, 255, 255, 0.1));
+    color: var(--stremio-color-text-secondary, #9da3af);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    outline: none;
+    user-select: none;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        background: var(--flat-pill-hover, rgba(255, 255, 255, 0.08));
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    &:focus-visible {
+        border-color: var(--stremio-color-accent, #6366f1);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+
+    &.selected {
+        background: var(--stremio-color-accent, #6366f1);
+        border-color: var(--stremio-color-accent, #6366f1);
+        color: #ffffff;
+        font-weight: 600;
+    }
+}
+
+.pill-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    fill: currentColor;
+}
+
+.pill-label {
+    line-height: 1;
+}
