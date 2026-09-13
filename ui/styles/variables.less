@@ -55,53 +55,69 @@
     sans-serif;
 @font-family-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 
-// Crispyroll / Springroll Modern Flat Theme Tokens
-@cr-canvas: #0d0d11; // Dominant canvas background (OLED-friendly charcoal, prevents black smear)
-@cr-surface-1: #17171e; // Surface 1 (Cards, shelves, category pills, input bars)
-@cr-surface-2: #21212b; // Surface 2 (Elevated menus, modal background, sidebar)
-@cr-surface-3: #2b2b38; // Surface 3 (Hover active, higher elevation)
-@cr-border: #2c2c3a; // Hairline subtle border
-@cr-accent: #ff6600; // Crispyroll signature electric ember orange
-@cr-accent-hover: #ff7a1a;
-@cr-warm-gold: #ffc107; // Badges, ratings, highlights
-@cr-text-primary: #ededf2; // Primary text (Titles, active elements)
-@cr-text-secondary: #8f8fa0; // Secondary text (Descriptions, metadata)
-@cr-text-muted: #5e5e6e;
+// Canonical Springroll Flat Design System Tokens
+@flat-canvas: #0d0d11; // Dominant canvas background (OLED-friendly charcoal)
+@flat-surface-1: #17171e; // Surface 1 (Cards, shelves, category pills, input bars)
+@flat-surface-2: #21212b; // Surface 2 (Elevated menus, modal background, sidebar)
+@flat-surface-3: #2b2b38; // Surface 3 (Hover active, higher elevation)
+@flat-border: #2c2c3a; // Hairline subtle border
+@flat-border-subtle: rgba(44, 44, 58, 0.6);
+@flat-accent: #ff6600; // Signature electric fiery ember orange
+@flat-accent-hover: #ff7a1a;
+@flat-accent-active: #e65c00;
+@flat-accent-dim: rgba(255, 102, 0, 0.16);
+@flat-warm-gold: #ffc107; // Badges, ratings, highlights
+@flat-text-primary: #ededf2; // Primary text (Titles, active elements)
+@flat-text-secondary: #8f8fa0; // Secondary text (Descriptions, metadata)
+@flat-text-muted: #5e5e6e; // Low-priority text, placeholders, disabled
 
-// Springroll Flat Theme Tokens (Aliased to Crispyroll System)
-@springroll-mint: @cr-accent;
-@springroll-mint-hover: @cr-accent-hover;
-@springroll-deep-sea: @cr-canvas;
-@springroll-surface-slate: @cr-surface-1;
-@springroll-surface-slate-hover: @cr-surface-2;
-@springroll-warm-gold: @cr-warm-gold;
-@springroll-crisp-paper: @cr-text-primary;
-@springroll-muted-sage: @cr-text-secondary;
+// Crispyroll Aliases
+@cr-canvas: @flat-canvas;
+@cr-surface-1: @flat-surface-1;
+@cr-surface-2: @flat-surface-2;
+@cr-surface-3: @flat-surface-3;
+@cr-border: @flat-border;
+@cr-accent: @flat-accent;
+@cr-accent-hover: @flat-accent-hover;
+@cr-warm-gold: @flat-warm-gold;
+@cr-text-primary: @flat-text-primary;
+@cr-text-secondary: @flat-text-secondary;
+@cr-text-muted: @flat-text-muted;
+
+// Springroll Aliases
+@springroll-mint: @flat-accent;
+@springroll-mint-hover: @flat-accent-hover;
+@springroll-deep-sea: @flat-canvas;
+@springroll-surface-slate: @flat-surface-1;
+@springroll-surface-slate-hover: @flat-surface-2;
+@springroll-warm-gold: @flat-warm-gold;
+@springroll-crisp-paper: @flat-text-primary;
+@springroll-muted-sage: @flat-text-secondary;
 
 // Semantic Design Tokens
-@springroll-primary: @cr-accent;
-@springroll-primary-hover: @cr-accent-hover;
-@springroll-secondary: @cr-warm-gold;
-@springroll-dark-canvas: @cr-canvas;
-@springroll-dark-surface: @cr-surface-1;
-@springroll-dark-card: @cr-surface-1;
-@springroll-dark-card-hover: @cr-surface-2;
+@springroll-primary: @flat-accent;
+@springroll-primary-hover: @flat-accent-hover;
+@springroll-secondary: @flat-warm-gold;
+@springroll-dark-canvas: @flat-canvas;
+@springroll-dark-surface: @flat-surface-1;
+@springroll-dark-card: @flat-surface-1;
+@springroll-dark-card-hover: @flat-surface-2;
 @springroll-badge-bg: rgba(255, 102, 0, 0.14);
 @springroll-badge-border: rgba(255, 102, 0, 0.5);
-@springroll-text-primary: @cr-text-primary;
-@springroll-text-muted: @cr-text-secondary;
+@springroll-text-primary: @flat-text-primary;
+@springroll-text-muted: @flat-text-secondary;
 
 // Legacy / Compatibility Aliases
-@springroll-orange: @cr-accent;
-@springroll-orange-hover: @cr-accent-hover;
-@springroll-orange-active: #e65c00;
-@steamroll-orange: @cr-accent;
-@steamroll-orange-hover: @cr-accent-hover;
-@steamroll-orange-active: #e65c00;
-@steamroll-dark-canvas: @cr-canvas;
-@steamroll-dark-surface: @cr-surface-1;
-@steamroll-dark-card: @cr-surface-1;
-@steamroll-dark-card-hover: @cr-surface-2;
+@springroll-orange: @flat-accent;
+@springroll-orange-hover: @flat-accent-hover;
+@springroll-orange-active: @flat-accent-active;
+@steamroll-orange: @flat-accent;
+@steamroll-orange-hover: @flat-accent-hover;
+@steamroll-orange-active: @flat-accent-active;
+@steamroll-dark-canvas: @flat-canvas;
+@steamroll-dark-surface: @flat-surface-1;
+@steamroll-dark-card: @flat-surface-1;
+@steamroll-dark-card-hover: @flat-surface-2;
 @steamroll-badge-bg: @springroll-badge-bg;
 @steamroll-badge-border: @springroll-badge-border;
-@steamroll-text-muted: @cr-text-secondary;
+@steamroll-text-muted: @flat-text-secondary;
