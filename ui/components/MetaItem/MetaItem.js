@@ -281,6 +281,7 @@ MetaItem.propTypes = {
     className: PropTypes.string,
     type: PropTypes.string,
     name: PropTypes.string,
+    subtitle: PropTypes.string,
     poster: PropTypes.string,
     posterShape: PropTypes.oneOf(['poster', 'landscape', 'square']),
     posterChangeCursor: PropTypes.bool,

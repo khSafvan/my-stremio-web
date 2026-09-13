@@ -19,7 +19,7 @@
     height: 46vh;
     max-height: 35rem;
     margin: 0.5rem 0 2rem 0;
-    border-radius: 12px;
+    border-radius: 4px;
     background-color: @springroll-deep-sea;
     border: 1px solid #2c2c3a;
     overflow: hidden;
@@ -120,7 +120,7 @@
                 background-color: rgba(244, 208, 111, 0.14);
                 border: 1px solid rgba(244, 208, 111, 0.45);
                 padding: 0.22rem 0.55rem;
-                border-radius: 8px;
+                border-radius: 3px;
             }
 
             .type-badge {
@@ -131,7 +131,7 @@
                 background-color: @springroll-surface-slate;
                 border: 1px solid #2c2c3a;
                 padding: 0.22rem 0.55rem;
-                border-radius: 8px;
+                border-radius: 3px;
             }
 
             .meta-badge {
@@ -141,7 +141,7 @@
                 background-color: rgba(23, 23, 30, 0.8);
                 border: 1px solid #2c2c3a;
                 padding: 0.22rem 0.55rem;
-                border-radius: 8px;
+                border-radius: 3px;
             }
 
             .rating-badge {
@@ -151,14 +151,16 @@
                 background-color: rgba(255, 193, 7, 0.12);
                 border: 1px solid rgba(255, 193, 7, 0.3);
                 padding: 0.22rem 0.55rem;
-                border-radius: 8px;
+                border-radius: 3px;
             }
         }
 
         .hero-title {
-            font-size: 2.75rem;
-            font-weight: 900;
-            line-height: 1.12;
+            font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.025em;
             color: @springroll-crisp-paper;
             margin: 0;
             display: -webkit-box;
@@ -174,8 +176,10 @@
             flex-wrap: wrap;
 
             .genre-tag {
+                font-family: var(--font-family-body, 'Inter', sans-serif);
                 font-size: 0.85rem;
                 font-weight: 500;
+                letter-spacing: -0.005em;
                 color: @springroll-muted-sage;
 
                 &:not(:last-child)::after {
@@ -187,8 +191,10 @@
         }
 
         .hero-description {
+            font-family: var(--font-family-body, 'Inter', sans-serif);
             font-size: 0.95rem;
             line-height: 1.55;
+            letter-spacing: -0.005em;
             color: @springroll-muted-sage;
             margin: 0;
             display: -webkit-box;
@@ -210,10 +216,11 @@
                 align-items: center;
                 gap: 0.55rem;
                 padding: 0.75rem 1.6rem;
-                border-radius: 8px;
-                font-size: 0.95rem;
+                border-radius: 4px;
+                font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+                font-size: 0.925rem;
                 font-weight: 700;
-                letter-spacing: 0.03em;
+                letter-spacing: -0.01em;
                 cursor: pointer;
                 border: none;
                 transition: background-color 140ms ease, border-color 140ms ease;
@@ -309,7 +316,7 @@
                 position: relative;
                 width: 100%;
                 aspect-ratio: 16 / 9;
-                border-radius: 8px;
+                border-radius: 4px;
                 overflow: hidden;
                 border: 2px solid #2c2c3a;
                 background-color: @springroll-surface-slate;
@@ -356,7 +363,7 @@
         z-index: 4;
         width: 2.75rem;
         height: 2.75rem;
-        border-radius: 8px;
+        border-radius: 4px;
         background-color: @springroll-surface-slate;
         border: 1px solid rgba(108, 138, 130, 0.35);
         color: @springroll-crisp-paper;
@@ -402,7 +409,7 @@
     height: 42vh;
     max-height: 32rem;
     margin: 0.5rem 0 2rem 0;
-    border-radius: 12px;
+    border-radius: 4px;
     background-color: @springroll-surface-slate;
     border: 1px solid rgba(108, 138, 130, 0.2);
 }

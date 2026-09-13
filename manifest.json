@@ -1,9 +1,9 @@
 {
-    "name": "Stremio Web",
-    "short_name": "Stremio",
+    "name": "Springroll",
+    "short_name": "Springroll",
     "description": "Freedom To Stream",
-    "background_color": "#0c0b11",
-    "theme_color": "#2a2843",
+    "background_color": "#0d0d11",
+    "theme_color": "#0d0d11",
     "orientation": "any",
     "display": "standalone",
     "display_override": ["standalone"],

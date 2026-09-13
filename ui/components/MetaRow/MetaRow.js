@@ -152,10 +152,12 @@ MetaRow.propTypes = {
         deepLinks: PropTypes.shape({
             discover: PropTypes.string,
             library: PropTypes.string
-        })
+        }),
+        posterShape: PropTypes.string
     }),
     itemComponent: PropTypes.elementType,
-    notifications: PropTypes.object
+    notifications: PropTypes.object,
+    posterShape: PropTypes.string
 };
 
 module.exports = MetaRow;

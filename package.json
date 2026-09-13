@@ -9,6 +9,7 @@
         "start": "./scripts/desktop.sh",
         "dev": "./scripts/desktop.sh",
         "build": "./scripts/desktop.sh build",
+        "build:ui": "webpack --mode production",
         "build:desktop": "cargo build --bin stremio",
         "build:release": "cargo build --release --bin stremio",
         "test": "jest",

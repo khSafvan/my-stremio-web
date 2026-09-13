@@ -18,6 +18,12 @@ cd "${PROJECT_ROOT}"
 # Ensure cargo is on PATH
 export PATH="${HOME}/.cargo/bin:${PATH}"
 
+# Ensure Node / pnpm from NVM or standard paths is on PATH
+NVM_NODE_BIN="$(ls -d "${HOME}/.nvm/versions/node/"*/bin 2>/dev/null | tail -n 1 || true)"
+if [ -n "${NVM_NODE_BIN}" ] && [ -d "${NVM_NODE_BIN}" ]; then
+    export PATH="${NVM_NODE_BIN}:${PATH}"
+fi
+
 if ! command -v cargo >/dev/null 2>&1; then
     echo "Error: Cargo / Rust is required to run/build the desktop application." >&2
     exit 1
