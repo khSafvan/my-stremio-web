@@ -44,6 +44,22 @@ const StreamingServerWarning = ({ className }: Props) => {
         });
     }, [profile.settings]);
 
+    const [isRetrying, setIsRetrying] = React.useState(false);
+
+    const onRetry = useCallback(async () => {
+        setIsRetrying(true);
+        try {
+            await fetch('http://127.0.0.1:11470/settings', { mode: 'cors' });
+        } catch (_) {}
+        core.transport.dispatch({
+            action: 'StreamingServer',
+            args: {
+                action: 'Reload'
+            }
+        });
+        setTimeout(() => setIsRetrying(false), 1000);
+    }, [core]);
+
     const onLater = useCallback(() => {
         updateSettings(createDismissalDate(1));
     }, [updateSettings]);
@@ -58,6 +74,16 @@ const StreamingServerWarning = ({ className }: Props) => {
                 {t('SETTINGS_SERVER_UNAVAILABLE')}
             </div>
             <div className={styles['actions']}>
+                <Button
+                    className={styles['action']}
+                    title="Retry Connection"
+                    onClick={onRetry}
+                    tabIndex={-1}
+                >
+                    <div className={styles['label']}>
+                        {isRetrying ? 'Connecting...' : 'Retry Connection'}
+                    </div>
+                </Button>
                 <a
                     href='https://www.stremio.com/download-service'
                     target='_blank'

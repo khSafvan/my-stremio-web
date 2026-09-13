@@ -5,9 +5,11 @@ use server_manager::ServerManager;
 
 #[tauri::command]
 fn get_server_status() -> serde_json::Value {
-    let listening = ServerManager::is_server_listening();
+    let healthy = ServerManager::is_server_healthy();
+    let listening = healthy || ServerManager::is_server_listening();
     serde_json::json!({
         "running": listening,
+        "healthy": healthy,
         "url": if listening { "http://127.0.0.1:11470" } else { "" }
     })
 }

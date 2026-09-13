@@ -24,6 +24,35 @@ impl ServerManager {
         TcpStream::connect_timeout(&addr, Duration::from_millis(150)).is_ok()
     }
 
+    /// Check if a streaming server is responding with valid HTTP 200 and CORS headers
+    pub fn is_server_healthy() -> bool {
+        let addr: SocketAddr = match "127.0.0.1:11470".parse() {
+            Ok(a) => a,
+            Err(_) => return false,
+        };
+        let mut stream = match TcpStream::connect_timeout(&addr, Duration::from_millis(400)) {
+            Ok(s) => s,
+            Err(_) => return false,
+        };
+        let _ = stream.set_read_timeout(Some(Duration::from_millis(600)));
+        let _ = stream.set_write_timeout(Some(Duration::from_millis(400)));
+
+        use std::io::{Read, Write};
+        let req = b"GET /settings HTTP/1.1\r\nHost: 127.0.0.1:11470\r\nOrigin: http://tauri.localhost\r\nConnection: close\r\n\r\n";
+        if stream.write_all(req).is_err() {
+            return false;
+        }
+
+        let mut buf = [0u8; 1024];
+        let bytes_read = match stream.read(&mut buf) {
+            Ok(n) if n > 0 => n,
+            _ => return false,
+        };
+
+        let response = String::from_utf8_lossy(&buf[..bytes_read]);
+        response.starts_with("HTTP/1.1 200") && response.to_lowercase().contains("access-control-allow-origin")
+    }
+
     /// Find the path to server.js
     fn find_server_path() -> Option<PathBuf> {
         // Candidate 1: relative to current working directory (development & local runs)
@@ -55,7 +84,7 @@ impl ServerManager {
         None
     }
 
-    /// Locate Node.js binary (checks PATH, NVM, standard Linux paths)
+    /// Locate Node.js binary (checks PATH, NVM, standard Linux paths, stremio-runtime)
     fn find_node_binary() -> Option<PathBuf> {
         // 1. Check if node is in standard PATH
         if let Ok(output) = Command::new("node").arg("--version").output() {
@@ -84,7 +113,15 @@ impl ServerManager {
             }
         }
 
-        // 3. Fallback to standard locations
+        // 3. Check for installed stremio-runtime on Linux
+        if let Ok(home) = std::env::var("HOME") {
+            let runtime = Path::new(&home).join(".local/share/stremio-service/stremio-runtime");
+            if runtime.exists() {
+                return Some(runtime);
+            }
+        }
+
+        // 4. Fallback to standard locations
         for candidate in &["/usr/bin/node", "/usr/local/bin/node"] {
             let p = Path::new(candidate);
             if p.exists() {
@@ -110,7 +147,7 @@ impl ServerManager {
                     // Check if process is alive
                     if libc::kill(pid, 0) == 0 {
                         // If it's listening and responsive, we can let it be or cleanly terminate it if stale
-                        if !Self::is_server_listening() {
+                        if !Self::is_server_healthy() {
                             println!("[Tauri] Cleaning up stale unresponsive streaming server PID: {}", pid);
                             libc::kill(pid, libc::SIGTERM);
                             std::thread::sleep(Duration::from_millis(150));
@@ -130,8 +167,17 @@ impl ServerManager {
     /// Start the bundled streaming server if not already running
     pub fn start(&self) {
         if Self::is_server_listening() {
-            println!("[Tauri] Streaming Server is already active and responsive on 127.0.0.1:11470.");
-            return;
+            if Self::is_server_healthy() {
+                println!("[Tauri] Streaming Server is already active, responsive, and CORS-enabled on 127.0.0.1:11470.");
+                return;
+            }
+
+            println!("[Tauri] Process listening on 127.0.0.1:11470 failed CORS check or is unresponsive; attempting recovery...");
+            #[cfg(target_os = "linux")]
+            {
+                let _ = Command::new("fuser").args(["-k", "-n", "tcp", "11470"]).output();
+                std::thread::sleep(Duration::from_millis(200));
+            }
         }
 
         Self::cleanup_stale_pid();

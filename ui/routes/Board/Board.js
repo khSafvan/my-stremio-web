@@ -29,11 +29,13 @@ const HeroBanner = require('./HeroBanner');
 const CategoryPills = require('./CategoryPills');
 const styles = require('./styles');
 const { default: StreamingServerWarning } = require('./StreamingServerWarning');
+const { useCore } = require('stremio/core');
 
 const THRESHOLD = 5;
 
 const Board = () => {
     const t = useTranslate();
+    const core = useCore();
     const streamingServer = useStreamingServer();
     const continueWatchingPreview = useContinueWatchingPreview();
     const [board, loadBoardRows] = useBoard();
@@ -41,6 +43,27 @@ const Board = () => {
     const profile = useProfile();
     const libraryCatalog = useBoardLibrary();
     const [selectedCategory, setSelectedCategory] = React.useState('all');
+
+    // Auto-reconnect to streaming server if previously failed
+    React.useEffect(() => {
+        if (streamingServer.settings !== null && streamingServer.settings.type === 'Err') {
+            const timer = setInterval(async () => {
+                try {
+                    const res = await fetch('http://127.0.0.1:11470/settings', { mode: 'cors' });
+                    if (res.ok) {
+                        core.transport.dispatch({
+                            action: 'StreamingServer',
+                            args: {
+                                action: 'Reload'
+                            }
+                        });
+                        clearInterval(timer);
+                    }
+                } catch (_) {}
+            }, 2500);
+            return () => clearInterval(timer);
+        }
+    }, [streamingServer.settings, core]);
 
     const showStreamingServerWarning = React.useMemo(() => {
         return (

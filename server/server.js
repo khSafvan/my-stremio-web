@@ -18282,10 +18282,10 @@
         })), app.use(externalRouter), app.use(router), app;
     }
     function sendCORSHeaders(req, res, next) {
-        if ("OPTIONS" === req.method && req.headers.origin) return res.setHeader("Access-Control-Allow-Origin", "*"), 
-        res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS"), res.setHeader("Access-Control-Allow-Headers", req.headers["access-control-request-headers"] || "Range"), 
+        if ("OPTIONS" === req.method) return res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*"), 
+        res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE"), res.setHeader("Access-Control-Allow-Headers", req.headers["access-control-request-headers"] || "Range, Content-Type, Authorization"), 
         res.setHeader("Access-Control-Max-Age", "1728000"), res.end(), !0;
-        req.headers.origin && res.setHeader("Access-Control-Allow-Origin", "*"), next && next();
+        res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*"), next && next();
     }
     function sendDLNAHeaders(req, res, next) {
         res.setHeader("transferMode.dlna.org", "Streaming"), res.setHeader("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000"), 
@@ -46597,7 +46597,7 @@
             });
         } catch (err) {}
         console.log("Using app path -> " + appPath), enginefs.router.use((function(req, res, next) {
-            process.env.NO_CORS || !req.headers.origin || req.headers.origin.match(".strem.io(:80)?$") || req.headers.origin.match(".stremio.net(:80)?$") || req.headers.origin.match(".stremio.com(:80)?$") || req.headers.origin.match("stremio-development.netlify.app(:80)?$") || req.headers.origin.match("stremio.github.io(:80)?$") || req.headers.origin.match("gstatic.com") || "https://stremio.github.io" === req.headers.origin || req.headers.origin.match("(127.0.0.1|localhost):11470$") || req.headers.origin.match("peario.xyz") ? enginefs.sendCORSHeaders(req, res, next) : next();
+            enginefs.sendCORSHeaders(req, res, next);
         }));
         var settings = __webpack_require__(106);
         if (!process.env.HLS_V2_DISABLED) {
