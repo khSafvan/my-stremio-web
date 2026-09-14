@@ -1,0 +1,287 @@
+@import (reference) '~@stremio/stremio-colors/less/stremio-colors.less';
+
+.aiostreams-modal-dialog {
+    .aiostreams-content {
+        width: 48rem;
+        max-width: 100%;
+        min-height: 28rem;
+        max-height: 65vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        padding: 0.5rem 0 1rem;
+        color: var(--primary-foreground-color, #ffffff);
+        box-sizing: border-box;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.5rem;
+
+            .tab-button {
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                background: transparent;
+                color: rgba(255, 255, 255, 0.6);
+                font-weight: 500;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: all 0.15s ease;
+
+                &:hover {
+                    color: #ffffff;
+                    background: rgba(255, 255, 255, 0.05);
+                }
+
+                &.active {
+                    color: #ffffff;
+                    background: var(--accent-color, #4e54c8);
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .section-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.65);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+
+            label {
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.85);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .hint {
+                font-size: 0.75rem;
+                color: rgba(255, 255, 255, 0.45);
+            }
+
+            .text-input {
+                width: 100%;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 6px;
+                color: #ffffff;
+                padding: 0.65rem 0.8rem;
+                font-size: 0.85rem;
+                font-family: inherit;
+                box-sizing: border-box;
+
+                &:focus {
+                    outline: none;
+                    border-color: var(--accent-color, #4e54c8);
+                }
+            }
+
+            textarea.text-input {
+                font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                font-size: 0.8rem;
+                line-height: 1.4;
+                resize: vertical;
+                min-height: 7rem;
+            }
+        }
+
+        .dropzone-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+
+            .file-input-wrapper {
+                position: relative;
+                overflow: hidden;
+                display: inline-block;
+
+                input[type=file] {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    opacity: 0;
+                    cursor: pointer;
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        }
+
+        .status-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            &.online {
+                border-left: 4px solid #2ecc71;
+            }
+
+            &.offline {
+                border-left: 4px solid #e74c3c;
+            }
+
+            &.testing {
+                border-left: 4px solid #f39c12;
+            }
+
+            .status-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.2rem;
+
+                .status-title {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .status-meta {
+                    font-size: 0.75rem;
+                    color: rgba(255, 255, 255, 0.5);
+                }
+            }
+        }
+
+        .badges-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+
+            .badge {
+                padding: 0.25rem 0.6rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.85);
+
+                &.scraper {
+                    background: rgba(78, 84, 200, 0.2);
+                    border-color: rgba(78, 84, 200, 0.4);
+                    color: #a5b4fc;
+                }
+
+                &.debrid {
+                    background: rgba(46, 204, 113, 0.15);
+                    border-color: rgba(46, 204, 113, 0.3);
+                    color: #86efac;
+                }
+
+                &.filter {
+                    background: rgba(243, 156, 18, 0.15);
+                    border-color: rgba(243, 156, 18, 0.3);
+                    color: #fde047;
+                }
+            }
+        }
+
+        .btn {
+            padding: 0.55rem 1.1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+
+            &.btn-primary {
+                background: var(--accent-color, #4e54c8);
+                color: #ffffff;
+
+                &:hover {
+                    filter: brightness(1.15);
+                }
+            }
+
+            &.btn-secondary {
+                background: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.16);
+                }
+            }
+
+            &.btn-danger {
+                background: rgba(231, 76, 60, 0.2);
+                color: #ff7675;
+                border: 1px solid rgba(231, 76, 60, 0.3);
+
+                &:hover {
+                    background: rgba(231, 76, 60, 0.35);
+                }
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+
+        .button-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .mini-icon {
+            width: 0.9rem;
+            height: 0.9rem;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+
+            .toggle-label {
+                font-size: 0.85rem;
+                font-weight: 500;
+            }
+            .toggle-hint {
+                font-size: 0.75rem;
+                color: rgba(255, 255, 255, 0.45);
+            }
+        }
+    }
+}

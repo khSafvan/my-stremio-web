@@ -8,7 +8,7 @@ const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { useCore } = require('stremio/core');
 const { usePlatform, useBinaryState, withCoreSuspender } = require('stremio/common');
-const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
+const { AddonDetailsModal, AIOStreamsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
 const useToast = require('stremio/common/Toast/useToast');
 const Addon = require('./Addon');
 const useInstalledAddons = require('./useInstalledAddons');
@@ -36,6 +36,8 @@ const Addons = () => {
     const selectInputs = useSelectableInputs(installedAddons, remoteAddons);
     const [filtersModalOpen, openFiltersModal, closeFiltersModal] = useBinaryState(false);
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
+    const [aioModalOpen, openAioModal, closeAioModal] = useBinaryState(false);
+
     const addAddonUrlInputRef = React.useRef(null);
     const addAddonOnSubmit = React.useCallback(() => {
         if (addAddonUrlInputRef.current !== null) {
@@ -137,6 +139,10 @@ const Addons = () => {
                     <Button className={styles['add-button-container']} title={t('ADD_ADDON')} onClick={openAddAddonModal}>
                         <Icon className={styles['icon']} name={'add'} />
                         <div className={styles['add-button-label']}>{t('ADD_ADDON')}</div>
+                    </Button>
+                    <Button className={styles['add-button-container']} title={'AIOStreams Aggregator'} onClick={openAioModal}>
+                        <Icon className={styles['icon']} name={'link'} />
+                        <div className={styles['add-button-label']}>{'AIOStreams'}</div>
                     </Button>
                     <SearchBar
                         className={styles['search-bar']}
@@ -304,6 +310,14 @@ const Addons = () => {
                     <AddonDetailsModal
                         transportUrl={addonDetailsTransportUrl}
                         onCloseRequest={closeAddonDetails}
+                    />
+                    :
+                    null
+            }
+            {
+                aioModalOpen ?
+                    <AIOStreamsModal
+                        onCloseRequest={closeAioModal}
                     />
                     :
                     null

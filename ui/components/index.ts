@@ -37,6 +37,7 @@ import SpringrollLogo from './SpringrollLogo';
 import SpringrollIcon from './SpringrollIcon';
 import SpringrollLoader from './SpringrollLoader';
 import SplashScreen from './SplashScreen';
+import AIOStreamsModal from './AIOStreamsModal';
 
 export {
     AddonDetailsModal,
@@ -78,6 +79,8 @@ export {
     SpringrollLogo,
     SpringrollIcon,
     SpringrollLoader,
-    SplashScreen
+    SplashScreen,
+    AIOStreamsModal,
 };
+
 

@@ -1,8 +1,9 @@
-import React, { forwardRef, useCallback } from 'react';
+import React, { forwardRef, useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@stremio/stremio-icons/react';
-import { Button, MultiselectMenu } from 'stremio/components';
+import { Button, MultiselectMenu, AIOStreamsModal } from 'stremio/components';
 import { useToast } from 'stremio/common';
+import { loadAIOConfig, AIO_CONFIG_CHANGE_EVENT, AIOStreamsConfig } from 'stremio/services/AIOStreams';
 import { Section, Option } from '../components';
 import URLsManager from './URLsManager';
 import useStreamingOptions from './useStreamingOptions';
@@ -16,6 +17,17 @@ type Props = {
 const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer }: Props, ref) => {
     const { t } = useTranslation();
     const toast = useToast();
+
+    const [isAIOModalOpen, setIsAIOModalOpen] = useState(false);
+    const [aioConfig, setAioConfig] = useState<AIOStreamsConfig | null>(() => loadAIOConfig());
+
+    useEffect(() => {
+        const handleConfigChange = (e: any) => {
+            setAioConfig(e.detail || loadAIOConfig());
+        };
+        window.addEventListener(AIO_CONFIG_CHANGE_EVENT, handleConfigChange);
+        return () => window.removeEventListener(AIO_CONFIG_CHANGE_EVENT, handleConfigChange);
+    }, []);
 
     const {
         streamingServerRemoteUrlInput,
@@ -40,6 +52,19 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
     return (
         <Section ref={ref} label={'SETTINGS_NAV_STREAMING'}>
             <URLsManager selectedUrl={profile.settings.streamingServerUrl} settings={streamingServer.settings} />
+            <Option className={styles['configure-input-container']} label={'AIOStreams Aggregator'}>
+                <div className={styles['label']} title={aioConfig?.manifestUrl || 'Decoupled multi-scraper & debrid aggregator'}>
+                    {aioConfig?.manifestUrl ? `Active (${aioConfig.instanceUrl})` : 'Not Configured (Connect Debrid & Scrapers)'}
+                </div>
+                <Button className={styles['configure-button-container']} title={'Configure AIOStreams'} onClick={() => setIsAIOModalOpen(true)}>
+                    <Icon className={styles['icon']} name={'settings'} />
+                </Button>
+            </Option>
+            {
+                isAIOModalOpen &&
+                    <AIOStreamsModal onCloseRequest={() => setIsAIOModalOpen(false)} />
+            }
+
             {
                 streamingServerRemoteUrlInput.value !== null &&
                     <Option className={styles['configure-input-container']} label={'SETTINGS_REMOTE_URL'}>

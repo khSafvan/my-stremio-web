@@ -74,7 +74,7 @@ To deliver a truly cinema-grade, ultra-snappy experience with zero friction and 
    - **Endpoints**: `https://api.simkl.com/` (`/anime/genres`, `/anime/airing`, `/search/id`).
    - **Why SIMKL**: Western scrapers and databases struggle with anime seasons, OVAs, and title romanization. SIMKL provides native anime tracking and a **bi-directional ID bridge** (`IMDb` $\leftrightarrow$ `TMDb` $\leftrightarrow$ `MAL` $\leftrightarrow$ `SIMKL`).
    - **Zero-Failure Stream Resolution**: When an anime item is browsed from SIMKL, Springroll automatically carries its resolved IMDb `tt...` ID or TMDb ID so that stream scrapers match immediately without missing torrents or debrid cached files.
-3. **Stream Resolution (Stremio Addon Protocol)**:
+3. **Stream Resolution Engine & AIOStreams Aggregator**:
    - Preserves 100% compatibility with existing community scrapers (Torrentio, Cinemeta, Cyberflix, MediaFusion, Comet, Real-Debrid).
    - The addon protocol receives the standard `tt...` ID and returns video stream manifests.
 4. **Streaming Availability Badges (Optional Watchmode / JustWatch Partner)**:
@@ -82,7 +82,46 @@ To deliver a truly cinema-grade, ultra-snappy experience with zero friction and 
 
 ---
 
+### 2.2 AIOStreams Aggregator & Stream Resolution Engine
+
+```
+[ Springroll Client ] 
+   │
+   ├── 1. Discovery / Browsing ──► TMDb / SIMKL API (Normalized `imdb_id`: "tt1234567")
+   │
+   └── 2. Stream Resolution   ──► AIOStreams Addon Endpoint (`/stream/{type}/{id}.json`)
+                                       │
+                                       ├── Scraper Aggregation (Torrentio, Comet, MediaFusion, Jackett)
+                                       ├── Debrid Resolution (Real-Debrid, TorBox, Premiumize, AllDebrid)
+                                       ├── Deduplication & Filtering (Quality, Bitrate, Cached-Only)
+                                       └── Formatter (Clean resolution, HDR tags, audio codecs)
+                                       │
+                                       ▼
+                       Direct Playable Video URL (MP4 / MKV / HLS)
+                                       │
+                                       ▼
+                       Native Player Engine (`libmpv` FFI / Web Player)
+```
+
+#### Key Capabilities & Features:
+1. **Universal Protocol Conformance**:
+   - **Movies**: `{baseUrl}/stream/movie/{imdbId}.json`
+   - **Series Episodes**: `{baseUrl}/stream/series/{imdbId}:{season}:{episode}.json`
+2. **Configuration & Template Import/Export**:
+   - **Manifest URL Import**: Accepts `https://.../manifest.json` and `stremio://...` URLs with automatic extraction of base instance and config tokens.
+   - **Base64 Payload Auto-Detection**: Decodes embedded URL-safe base64 configurations to inspect active scrapers and debrid accounts.
+   - **JSON Configuration Import**: Supports pasting raw JSON or uploading `aiostreams-config.json` templates exported from public instances, Core Builds, Tamtaro, Grabberhawk, or Discord/Reddit community presets.
+   - **JSON Template Export**: One-click export of current active configuration as a clean, standardized `aiostreams-config.json` file for backup and multi-device sharing.
+   - **Health & Latency Check**: Built-in ping tool measures real-time response latency and validates manifest integrity.
+   - **One-Click Addon Installation**: Registers configured AIOStreams manifests directly into the Springroll core so streams render seamlessly in detail views.
+3. **Playback Capabilities & Stream Filtering**:
+   - Web direct-play filtering: filters out un-cached P2P infoHashes for pure debrid direct-play in browser/web environments.
+   - `proxyHeaders` propagation: forwards custom request/response headers (User-Agent, Referer) from upstream CDNs to the native player engine.
+
+---
+
 ## 3. Global Navigation & Application Frame Architecture
+
 
 ```
 +---------------------------------------------------------------------------------------------------+
