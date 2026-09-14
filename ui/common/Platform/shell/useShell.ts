@@ -62,6 +62,16 @@ const useShell = (): Shell => {
     const send = (method: string, ...args: (string | number | object)[]) => {
         if (isTauri) {
             const argPayload = args.length > 0 ? (args.length === 1 ? args[0] : args) : null;
+            if (method === 'mpv-observe-prop' && (argPayload === 'mpv-version' || (Array.isArray(argPayload) && argPayload[0] === 'mpv-version'))) {
+                setTimeout(() => {
+                    events.emit('mpv-prop-change', { name: 'mpv-version', data: '0.41.0' });
+                }, 0);
+            }
+            if (method === 'mpv-observe-prop' && (argPayload === 'ffmpeg-version' || (Array.isArray(argPayload) && argPayload[0] === 'ffmpeg-version'))) {
+                setTimeout(() => {
+                    events.emit('mpv-prop-change', { name: 'ffmpeg-version', data: '9.0.1' });
+                }, 0);
+            }
             invoke('shell_send_mpv', {
                 method,
                 args: argPayload,
@@ -110,6 +120,7 @@ const useShell = (): Shell => {
         if (isTauri) {
             let unlistenProp: (() => void) | undefined;
             let unlistenReady: (() => void) | undefined;
+            let unlistenEnded: (() => void) | undefined;
 
             listen('mpv-prop-change', (event: { payload: { name: string; data: any } }) => {
                 events.emit('mpv-prop-change', event.payload);
@@ -123,9 +134,16 @@ const useShell = (): Shell => {
                 unlistenReady = unlisten;
             });
 
+            listen('mpv-event-ended', (event: { payload: any }) => {
+                events.emit('mpv-event-ended', event.payload);
+            }).then((unlisten) => {
+                unlistenEnded = unlisten;
+            });
+
             return () => {
                 unlistenProp?.();
                 unlistenReady?.();
+                unlistenEnded?.();
             };
         }
 

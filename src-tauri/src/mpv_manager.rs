@@ -10,7 +10,7 @@ use tauri::{AppHandle, Emitter};
 #[cfg(target_os = "linux")]
 use std::os::unix::process::CommandExt;
 
-static OBSERVE_ID_COUNTER: AtomicU64 = AtomicU64::new(1);
+static OBSERVE_ID_COUNTER: AtomicU64 = AtomicU64::new(10);
 
 pub struct MpvManager {
     child: Mutex<Option<Child>>,
@@ -42,7 +42,7 @@ impl MpvManager {
         }
     }
 
-    pub fn ensure_running(&self, app_handle: &AppHandle) -> Result<(), String> {
+    pub fn start(&self, app_handle: &AppHandle) -> Result<(), String> {
         if self.is_running() {
             return Ok(());
         }
@@ -53,18 +53,19 @@ impl MpvManager {
         // Cleanup any previous socket file
         let _ = std::fs::remove_file(&self.socket_path);
 
-        println!("[MpvManager] Launching mpv with native GPU window for playback...");
+        println!("[MpvManager] Starting background mpv in headless idle mode...");
 
         let mut cmd = Command::new("mpv");
         cmd.arg("--idle=yes")
             .arg(format!("--input-ipc-server={}", self.socket_path.display()))
             .arg("--hwdec=auto")
             .arg("--force-window=no")
-            .arg("--autofit=80%")
+            .arg("--autofit=85%")
             .arg("--title=Stremio")
             .arg("--vo=gpu-next,gpu")
             .arg("--hr-seek=yes")
             .arg("--sub-auto=fuzzy")
+            .arg("--keepaspect=yes")
             .stdout(Stdio::null())
             .stderr(Stdio::null());
 
@@ -84,49 +85,17 @@ impl MpvManager {
         // Wait for socket to be created and connect
         let start = Instant::now();
         let mut connected_stream = None;
-        while start.elapsed() < Duration::from_millis(3500) {
+        while start.elapsed() < Duration::from_millis(3000) {
             if self.socket_path.exists() {
                 if let Ok(s) = UnixStream::connect(&self.socket_path) {
                     connected_stream = Some(s);
                     break;
                 }
             }
-            std::thread::sleep(Duration::from_millis(40));
+            std::thread::sleep(Duration::from_millis(30));
         }
 
-        let mut stream = connected_stream.ok_or_else(|| "Timed out waiting for mpv IPC socket".to_string())?;
-
-        // Send default property observers immediately to stream playback telemetry
-        let default_observes = [
-            "time-pos",
-            "duration",
-            "pause",
-            "seeking",
-            "volume",
-            "mute",
-            "eof-reached",
-            "metadata",
-            "video-params",
-            "track-list",
-            "aid",
-            "sid",
-            "vid",
-            "speed",
-            "demuxer-cache-time",
-            "paused-for-cache",
-            "cache-buffering-state",
-            "sub-scale",
-            "sub-pos",
-            "sub-delay",
-        ];
-        for prop in default_observes {
-            let id = OBSERVE_ID_COUNTER.fetch_add(1, Ordering::SeqCst);
-            let msg = serde_json::json!({
-                "command": ["observe_property", id, prop]
-            });
-            let _ = writeln!(stream, "{}", msg);
-        }
-        let _ = stream.flush();
+        let stream = connected_stream.ok_or_else(|| "Timed out waiting for mpv IPC socket".to_string())?;
 
         // Spawn background reader thread to forward mpv IPC events to Tauri frontend
         if let Ok(reader_stream) = stream.try_clone() {
@@ -139,7 +108,8 @@ impl MpvManager {
                         if let Some(event) = val.get("event").and_then(|e| e.as_str()) {
                             match event {
                                 "property-change" => {
-                                    if let (Some(name), Some(data)) = (val.get("name"), val.get("data")) {
+                                    if let Some(name) = val.get("name").and_then(|n| n.as_str()) {
+                                        let data = val.get("data").cloned().unwrap_or(serde_json::Value::Null);
                                         let _ = app.emit(
                                             "mpv-prop-change",
                                             serde_json::json!({
@@ -150,6 +120,14 @@ impl MpvManager {
                                     }
                                 }
                                 "playback-restart" | "file-loaded" => {
+                                    // Notify frontend that video is ready and playing
+                                    let _ = app.emit(
+                                        "mpv-prop-change",
+                                        serde_json::json!({
+                                            "name": "paused-for-cache",
+                                            "data": false,
+                                        }),
+                                    );
                                     let _ = app.emit(
                                         "mpv-prop-change",
                                         serde_json::json!({
@@ -157,9 +135,17 @@ impl MpvManager {
                                             "data": true,
                                         }),
                                     );
-                                    let _ = app.emit("mpv-event-video-ready", serde_json::json!({}));
                                 }
                                 "end-file" => {
+                                    let reason = val.get("reason").and_then(|r| r.as_str()).unwrap_or("eof");
+                                    let is_error = reason == "error";
+                                    let _ = app.emit(
+                                        "mpv-event-ended",
+                                        serde_json::json!({
+                                            "reason": reason,
+                                            "error": if is_error { Some("MPV playback error") } else { None },
+                                        }),
+                                    );
                                     let _ = app.emit(
                                         "mpv-prop-change",
                                         serde_json::json!({
@@ -177,31 +163,12 @@ impl MpvManager {
         }
 
         *stream_guard = Some(stream);
+        println!("[MpvManager] MPV background process connected successfully");
         Ok(())
     }
 
     pub fn send_command(&self, app_handle: &AppHandle, method: &str, args: serde_json::Value) -> Result<(), String> {
-        let is_loadfile = method == "mpv-command"
-            && args
-                .as_array()
-                .and_then(|a| a.first())
-                .and_then(|f| f.as_str())
-                == Some("loadfile");
-
-        let is_stop = method == "mpv-command"
-            && args
-                .as_array()
-                .and_then(|a| a.first())
-                .and_then(|f| f.as_str())
-                == Some("stop");
-
-        // Do not spawn mpv on application startup or initial idle observes before a file is loaded
-        if !self.is_running() {
-            if !is_loadfile {
-                return Ok(());
-            }
-            self.ensure_running(app_handle)?;
-        }
+        self.start(app_handle)?;
 
         let command_payload = match method {
             "mpv-command" => {
@@ -212,7 +179,7 @@ impl MpvManager {
             "mpv-set-prop" => {
                 if let Some(arr) = args.as_array() {
                     if arr.len() >= 2 {
-                        // Crucial: Ignore vo=libmpv because we are rendering directly to MPV's GPU window
+                        // Crucial: Ignore vo=libmpv because we render directly to MPV's GPU window
                         if arr[0] == "vo" && arr[1] == "libmpv" {
                             println!("[MpvManager] Preserving GPU window (ignoring vo=libmpv)");
                             return Ok(());
@@ -229,9 +196,16 @@ impl MpvManager {
                 }
             }
             "mpv-observe-prop" => {
+                let prop_name = if let Some(arr) = args.as_array() {
+                    arr.first().and_then(|v| v.as_str()).unwrap_or("")
+                } else if let Some(s) = args.as_str() {
+                    s
+                } else {
+                    ""
+                };
                 let id = OBSERVE_ID_COUNTER.fetch_add(1, Ordering::SeqCst);
                 serde_json::json!({
-                    "command": ["observe_property", id, args],
+                    "command": ["observe_property", id, prop_name],
                 })
             }
             "mpv-set-gpu-video-processing" => {
@@ -252,11 +226,6 @@ impl MpvManager {
             payload_bytes.push(b'\n');
             stream.write_all(&payload_bytes).map_err(|e| format!("Failed to write to mpv socket: {}", e))?;
             stream.flush().map_err(|e| format!("Failed to flush mpv socket: {}", e))?;
-        }
-
-        // If stop command was sent, hide/stop playback cleanly
-        if is_stop {
-            println!("[MpvManager] Stop command processed");
         }
 
         Ok(())
