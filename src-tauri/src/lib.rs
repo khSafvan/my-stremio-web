@@ -1,9 +1,9 @@
 mod server_manager;
-mod mpv_manager;
+mod native_player;
 
 use std::sync::Arc;
 use server_manager::ServerManager;
-use mpv_manager::MpvManager;
+use native_player::NativePlayer;
 
 #[tauri::command]
 fn get_server_status() -> serde_json::Value {
@@ -28,12 +28,11 @@ fn shell_get_info() -> serde_json::Value {
 
 #[tauri::command]
 fn shell_send_mpv(
-    app_handle: tauri::AppHandle,
-    state: tauri::State<Arc<MpvManager>>,
+    state: tauri::State<NativePlayer>,
     method: String,
     args: Option<serde_json::Value>,
 ) -> Result<(), String> {
-    state.send_command(&app_handle, &method, args.unwrap_or(serde_json::Value::Null))
+    state.send_command(&method, args.unwrap_or(serde_json::Value::Null))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -42,39 +41,101 @@ pub fn run() {
     let server_manager_setup = server_manager.clone();
     let server_manager_panic = server_manager.clone();
 
-    let mpv_manager = Arc::new(MpvManager::new());
-    let mpv_manager_exit = mpv_manager.clone();
-    let mpv_manager_panic = mpv_manager.clone();
-
     // Register panic hook to guarantee child process cleanup on Rust panics
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {
-        eprintln!("[Tauri Panic Hook] Emergency cleanup: stopping streaming server and mpv...");
+        eprintln!("[Tauri Panic Hook] Emergency cleanup: stopping streaming server...");
         server_manager_panic.stop();
-        mpv_manager_panic.stop();
         default_hook(panic_info);
     }));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().build())
-        .manage(mpv_manager)
         .invoke_handler(tauri::generate_handler![
             get_server_status,
             shell_get_info,
             shell_send_mpv
         ])
-        .setup(move |_app| {
+        .setup(move |app| {
+            use tauri::Manager;
             // Start the streaming server if needed
             server_manager_setup.start();
+
+            #[cfg(target_os = "linux")]
+            {
+                use gtk::prelude::*;
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Ok(gtk_win) = window.gtk_window() {
+                        let children = gtk_win.children();
+                        if let Some(top_child) = children.first() {
+                            // Tao wraps the webview in a default GtkBox inside GtkWindow.
+                            // Extract the inner webview so its parent().parent() directly references GtkWindow,
+                            // satisfying Tauri's attach_resize_handler downcast::<gtk::Window>().unwrap().
+                            let (real_wv, old_container) = if let Ok(container) = top_child.clone().downcast::<gtk::Container>() {
+                                let sub_children = container.children();
+                                if let Some(first_sub) = sub_children.first() {
+                                    (first_sub.clone(), Some(container))
+                                } else {
+                                    (top_child.clone(), None)
+                                }
+                            } else {
+                                (top_child.clone(), None)
+                            };
+
+                            if let Some(ref c) = old_container {
+                                c.remove(&real_wv);
+                            }
+                            gtk_win.remove(top_child);
+
+                            let overlay = gtk::Overlay::new();
+                            overlay.set_hexpand(true);
+                            overlay.set_vexpand(true);
+                            real_wv.set_hexpand(true);
+                            real_wv.set_vexpand(true);
+
+                            gtk_win.add(&overlay);
+
+                            let app_handle = app.handle().clone();
+                            match NativePlayer::new(app_handle) {
+                                Ok((player, gl_area)) => {
+                                    overlay.add(&gl_area);
+                                    overlay.add_overlay(&real_wv);
+                                    gl_area.show();
+                                    real_wv.show();
+                                    overlay.show();
+
+                                    // Verify hierarchy depth for Tauri's resize handler
+                                    let p1 = real_wv.parent().map(|p| p.type_().name().to_string());
+                                    let p2 = real_wv.parent().and_then(|p| p.parent()).map(|p| p.type_().name().to_string());
+                                    println!("[Tauri Setup] Webview parent hierarchy: {:?} -> {:?}", p1, p2);
+
+                                    app.manage(player);
+                                    println!("[Tauri Setup] Embedded libmpv GLArea and Overlay configured");
+                                }
+                                Err(e) => {
+                                    eprintln!("[Tauri Setup] Failed to create NativePlayer: {}", e);
+                                    overlay.add_overlay(&real_wv);
+                                    real_wv.show();
+                                    overlay.show();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             Ok(())
         })
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(move |_app_handle, event| {
+        .run(move |app_handle, event| {
+            use tauri::Manager;
             match event {
                 tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit => {
                     server_manager.stop();
-                    mpv_manager_exit.stop();
+                    if let Some(player) = app_handle.try_state::<NativePlayer>() {
+                        player.stop();
+                    }
                 }
                 tauri::RunEvent::WindowEvent {
                     event: tauri::WindowEvent::Destroyed,

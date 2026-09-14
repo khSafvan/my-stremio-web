@@ -577,7 +577,8 @@ const Player = () => {
                 seriesInfo: player.seriesInfo,
             }, {
                 chromecastTransport: services.chromecast.active ? services.chromecast.transport : null,
-                shellTransport: null,
+                shellTransport: isNativeShell ? platform.shell : null,
+                mpvSeparateWindow: false,
             });
         }
     }, [streamingServer.baseUrl, player.selected, player.stream, streamSubtitles, forceTranscoding, casting, fallbackTranscoding, cancelKeyboardSeek, mediaCaps, settings.surroundSound, settings.hardwareDecoding, settings.assSubtitlesStyling, settings.gpuVideoProcessing, settings.videoMode, platform.name, platform.shell]);
@@ -616,6 +617,19 @@ const Player = () => {
         defaultAudioTrackSelected.current = false;
         playingOnExternalDevice.current = false;
     }, [video.state.stream]);
+
+    React.useEffect(() => {
+        if (platform.shell.active && video.containerRef.current) {
+            const isPlaying = video.state.loaded || (typeof video.state.time === 'number' && video.state.time > 0);
+            const bg = isPlaying ? 'transparent' : '';
+            for (let container = video.containerRef.current; container; container = container.parentElement) {
+                container.style.background = bg;
+            }
+            if (typeof document !== 'undefined' && document.body) {
+                document.body.style.background = bg;
+            }
+        }
+    }, [video.state.loaded, video.state.time, platform.shell.active]);
 
     React.useEffect(() => {
         if (requestedVideoScale.current === player.videoScale) {
@@ -1000,7 +1014,7 @@ const Player = () => {
                 onDoubleClick={onVideoDoubleClick}
             />
             {
-                !video.state.loaded ?
+                !video.state.loaded && !(typeof video.state.time === 'number' && video.state.time > 0) ?
                     <div className={classnames(styles['layer'], styles['background-layer'])}>
                         <img className={styles['image']} src={player?.metaItem?.content?.background} />
                     </div>
@@ -1008,7 +1022,7 @@ const Player = () => {
                     null
             }
             {
-                (video.state.buffering || !video.state.loaded) && !error ?
+                (video.state.buffering || (!video.state.loaded && !(typeof video.state.time === 'number' && video.state.time > 0))) && !error ?
                     <Buffering
                         ref={bufferingRef}
                         className={classnames(styles['layer'], styles['buffering-layer'])}
