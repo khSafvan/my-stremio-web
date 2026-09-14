@@ -88,6 +88,44 @@ const OptionsMenu = React.memo(React.forwardRef(({ className, stream, playbackDe
         subtitlesTrackUrl && platform.openExternal(subtitlesTrackUrl);
     }, [subtitlesTrackUrl]);
 
+    const [aiEnhancement, setAiEnhancement] = React.useState(() => {
+        try {
+            return localStorage.getItem('stremio_ai_enhancement') || 'off';
+        } catch (e) {
+            return 'off';
+        }
+    });
+
+    const onSelectAiEnhancement = React.useCallback((mode) => {
+        setAiEnhancement(mode);
+        try {
+            localStorage.setItem('stremio_ai_enhancement', mode);
+        } catch (e) {}
+
+        if (platform?.shell && typeof platform.shell.send === 'function') {
+            platform.shell.send('mpv-set-ai-enhancement', [mode]);
+        }
+
+        const title = mode === 'cas' 
+            ? 'AMD FidelityFX CAS (Enabled)'
+            : mode === 'anime4k'
+                ? 'Anime4K Lite (Enabled)'
+                : 'AI Video Enhancement: Off';
+
+        const desc = mode === 'cas'
+            ? 'Adaptive sharpening active (Movies & TV)'
+            : mode === 'anime4k'
+                ? 'Edge restore active (Anime)'
+                : 'Zero GPU shader overhead (Default)';
+
+        toast.show({
+            type: mode === 'off' ? 'info' : 'success',
+            title: title,
+            message: desc,
+            timeout: 2500
+        });
+    }, [platform?.shell, toast]);
+
     const onMouseDown = React.useCallback((event) => {
         event.nativeEvent.optionsMenuClosePrevented = true;
     }, []);
@@ -150,6 +188,26 @@ const OptionsMenu = React.memo(React.forwardRef(({ className, stream, playbackDe
                     />
                 ))
             }
+            <div className={styles['section-divider']} />
+            <div className={styles['section-title']}>AI Video Enhancement</div>
+            <Option
+                icon={'close'}
+                label={'Off (Default)'}
+                active={aiEnhancement === 'off'}
+                onClick={() => onSelectAiEnhancement('off')}
+            />
+            <Option
+                icon={'movies'}
+                label={'FidelityFX CAS (Movies/TV)'}
+                active={aiEnhancement === 'cas'}
+                onClick={() => onSelectAiEnhancement('cas')}
+            />
+            <Option
+                icon={'anime'}
+                label={'Anime4K (Anime/Art)'}
+                active={aiEnhancement === 'anime4k'}
+                onClick={() => onSelectAiEnhancement('anime4k')}
+            />
         </div>
     );
 }));

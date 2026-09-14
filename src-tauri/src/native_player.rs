@@ -113,6 +113,64 @@ pub struct NativePlayer {
 unsafe impl Send for NativePlayer {}
 unsafe impl Sync for NativePlayer {}
 
+fn detect_ram_tier() -> (usize, &'static str, &'static str, &'static str) {
+    let mut total_kb = 8 * 1024 * 1024; // fallback 8GB
+    if let Ok(meminfo) = std::fs::read_to_string("/proc/meminfo") {
+        for line in meminfo.lines() {
+            if line.starts_with("MemTotal:") {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    if let Ok(kb) = parts[1].parse::<usize>() {
+                        total_kb = kb;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    let total_gb = total_kb / (1024 * 1024);
+    if total_gb <= 8 {
+        // Tier 1 (<= 8GB, e.g. i3 6th Gen / Intel HD 520 / low-memory laptops)
+        // 128MB forward buffer, 32MB seekback cache, 90s readahead
+        (1, "134217728", "33554432", "90")
+    } else if total_gb <= 16 {
+        // Tier 2 (8GB - 16GB, mid-tier machines / discrete 920MX / Iris)
+        // 300MB forward buffer, 64MB seekback cache, 180s readahead
+        (2, "314572800", "67108864", "180")
+    } else {
+        // Tier 3 (> 16GB, gaming / workstation PCs)
+        // 600MB forward buffer, 128MB seekback cache, 240s readahead
+        (3, "629145600", "134217728", "240")
+    }
+}
+
+fn get_shaders_dir() -> std::path::PathBuf {
+    if let Ok(xdg) = std::env::var("XDG_DATA_HOME") {
+        if !xdg.is_empty() {
+            return std::path::PathBuf::from(xdg).join("stremio").join("shaders");
+        }
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        return std::path::PathBuf::from(home).join(".local").join("share").join("stremio").join("shaders");
+    }
+    std::path::PathBuf::from("/tmp/stremio-shaders")
+}
+
+fn install_shaders() {
+    let dir = get_shaders_dir();
+    if let Err(e) = std::fs::create_dir_all(&dir) {
+        eprintln!("[NativePlayer] Warning: Could not create shaders dir {:?}: {}", dir, e);
+        return;
+    }
+
+    let cas_glsl = include_str!("../shaders/cas.glsl");
+    let anime_glsl = include_str!("../shaders/anime4k_lite.glsl");
+
+    let _ = std::fs::write(dir.join("cas.glsl"), cas_glsl);
+    let _ = std::fs::write(dir.join("anime4k_lite.glsl"), anime_glsl);
+    println!("[NativePlayer] Installed AI enhancement shaders to {:?}", dir);
+}
+
 impl NativePlayer {
     pub fn new(app_handle: AppHandle) -> Result<(Self, gtk::GLArea), String> {
         // libmpv strictly requires LC_NUMERIC to be set to "C" for decimal parsing
@@ -120,17 +178,34 @@ impl NativePlayer {
             libc::setlocale(libc::LC_NUMERIC, b"C\0".as_ptr() as *const libc::c_char);
         }
 
+        install_shaders();
+        let (tier, max_bytes, max_back_bytes, readahead_secs) = detect_ram_tier();
+        println!(
+            "[NativePlayer] Hardware Resource Tier {}: demuxer-max-bytes={}, demuxer-max-back-bytes={}, readahead={}s",
+            tier, max_bytes, max_back_bytes, readahead_secs
+        );
+
         let mpv = Mpv::with_initializer(|init| {
             init.set_property("vo", "libmpv")?;
             init.set_property("hwdec", "auto")?;
             init.set_property("keepaspect", "yes")?;
             init.set_property("terminal", "no")?;
             init.set_property("msg-level", "all=warn")?;
+            // Tiered single-stream aggressive caching
+            init.set_property("demuxer-max-bytes", max_bytes)?;
+            init.set_property("demuxer-max-back-bytes", max_back_bytes)?;
+            init.set_property("demuxer-readahead-secs", readahead_secs)?;
+            init.set_property("cache", "yes")?;
+            init.set_property("cache-secs", "300")?;
+            init.set_property("demuxer-seekable-cache", "yes")?;
+            // AI shaders explicitly OFF by default (0 compute overhead)
+            init.set_property("glsl-shaders", "")?;
             Ok(())
         })
         .map_err(|e| format!("Failed to initialize libmpv: {}", e))?;
 
         let _ = mpv.disable_deprecated_events();
+        let _ = mpv.command("change-list", &["glsl-shaders", "clr", ""]);
 
         let gl_area = gtk::GLArea::new();
         gl_area.set_has_alpha(true);
@@ -391,6 +466,41 @@ impl NativePlayer {
                     };
                     let _ = mpv.observe_property(prop_name, format, id);
                 }
+            }
+            "mpv-set-ai-enhancement" | "set-ai-enhancement" => {
+                let mode = if let Some(arr) = args.as_array() {
+                    arr.first().and_then(|v| v.as_str()).unwrap_or("off")
+                } else if let Some(s) = args.as_str() {
+                    s
+                } else {
+                    "off"
+                };
+
+                let shaders_dir = get_shaders_dir();
+                match mode {
+                    "cas" => {
+                        let path = shaders_dir.join("cas.glsl").to_string_lossy().to_string();
+                        println!("[NativePlayer] AI Enhancement: AMD FidelityFX CAS enabled ({})", path);
+                        let _ = mpv.command("change-list", &["glsl-shaders", "set", &path]);
+                    }
+                    "anime4k" => {
+                        let path = shaders_dir.join("anime4k_lite.glsl").to_string_lossy().to_string();
+                        println!("[NativePlayer] AI Enhancement: Anime4K Lite enabled ({})", path);
+                        let _ = mpv.command("change-list", &["glsl-shaders", "set", &path]);
+                    }
+                    _ => {
+                        println!("[NativePlayer] AI Enhancement: Disabled (Off)");
+                        let _ = mpv.command("change-list", &["glsl-shaders", "clr", ""]);
+                    }
+                }
+
+                let _ = self.app_handle.emit(
+                    "mpv-prop-change",
+                    serde_json::json!({
+                        "name": "ai-enhancement",
+                        "data": mode,
+                    }),
+                );
             }
             _ => {}
         }

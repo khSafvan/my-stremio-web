@@ -7,16 +7,17 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button } = require('stremio/components');
 const styles = require('./styles');
 
-const Option = ({ icon, label, deviceId, disabled, onClick }) => {
+const Option = ({ icon, label, deviceId, disabled, active, onClick }) => {
     const onButtonClick = React.useCallback(() => {
         if (typeof onClick === 'function') {
             onClick(deviceId);
         }
     }, [onClick, deviceId]);
     return (
-        <Button className={classnames(styles['option-container'], { 'disabled': disabled })} disabled={disabled} onClick={onButtonClick}>
+        <Button className={classnames(styles['option-container'], { 'disabled': disabled, 'active': active })} disabled={disabled} onClick={onButtonClick}>
             <Icon className={styles['icon']} name={icon} />
             <div className={styles['label']}>{ label }</div>
+            {active && <Icon className={styles['active-check']} name={'checkmark'} />}
         </Button>
     );
 };
@@ -26,6 +27,7 @@ Option.propTypes = {
     label: PropTypes.string,
     deviceId: PropTypes.string,
     disabled: PropTypes.bool,
+    active: PropTypes.bool,
     onClick: PropTypes.func,
 };
 

@@ -584,6 +584,17 @@ const Player = () => {
     }, [streamingServer.baseUrl, player.selected, player.stream, streamSubtitles, forceTranscoding, casting, fallbackTranscoding, cancelKeyboardSeek, mediaCaps, settings.surroundSound, settings.hardwareDecoding, settings.assSubtitlesStyling, settings.gpuVideoProcessing, settings.videoMode, platform.name, platform.shell]);
 
     React.useEffect(() => {
+        if (player.selected?.stream && platform?.shell && typeof platform.shell.send === 'function') {
+            try {
+                const saved = localStorage.getItem('stremio_ai_enhancement') || 'off';
+                if (saved && saved !== 'off') {
+                    platform.shell.send('mpv-set-ai-enhancement', [saved]);
+                }
+            } catch (e) {}
+        }
+    }, [player.selected?.stream, platform?.shell]);
+
+    React.useEffect(() => {
         !seeking && timeChanged(video.state.time, video.state.duration, video.state.manifest?.name);
     }, [video.state.time, video.state.duration, video.state.manifest, seeking]);
 

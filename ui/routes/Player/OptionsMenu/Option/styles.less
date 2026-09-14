@@ -30,7 +30,19 @@
         color: var(--primary-foreground-color);
     }
 
+    .active-check {
+        flex: none;
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-left: 0.5rem;
+        color: var(--accent-color, #7852ff);
+    }
+
     &:hover {
+        background-color: var(--overlay-color);
+    }
+
+    &:global(.active) {
         background-color: var(--overlay-color);
     }
 
