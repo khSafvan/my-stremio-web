@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="ticketGrad" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD54F" />
+      <stop offset="50%" stop-color="#FFC107" />
+      <stop offset="100%" stop-color="#FF8F00" />
+    </linearGradient>
+    <linearGradient id="innerGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#181820" />
+      <stop offset="100%" stop-color="#0D0D11" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ticket Body -->
+  <rect x="40" y="86" width="432" height="340" rx="68" fill="url(#ticketGrad)" />
+  
+  <!-- Left Sprocket Perforations -->
+  <rect x="92" y="146" width="48" height="64" rx="20" fill="url(#innerGrad)" />
+  <rect x="92" y="302" width="48" height="64" rx="20" fill="url(#innerGrad)" />
+
+  <!-- Right Sprocket Perforations -->
+  <rect x="372" y="146" width="48" height="64" rx="20" fill="url(#innerGrad)" />
+  <rect x="372" y="302" width="48" height="64" rx="20" fill="url(#innerGrad)" />
+
+  <!-- Center Cinema Play Glyph -->
+  <path d="M220 180 L332 256 L220 332 Z" fill="url(#innerGrad)" />
+</svg>

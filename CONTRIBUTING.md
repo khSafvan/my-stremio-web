@@ -1,6 +1,6 @@
-# Contributing to Stremio Web
+# Contributing to Springroll
 
-Thank you for helping improve Stremio Web.
+Thank you for helping improve Springroll.
 
 ## Before you start
 
@@ -10,7 +10,7 @@ Thank you for helping improve Stremio Web.
 
 ## Development
 
-Stremio Web requires Node.js 22 or newer and pnpm 11 or newer.
+Springroll requires Node.js 22 or newer and pnpm 11 or newer.
 
 ```sh
 pnpm install

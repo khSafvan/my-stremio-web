@@ -1,12 +1,12 @@
 name: Feature request
-description: Suggest a new feature or enhancement for Stremio-Web
+description: Suggest a new feature or enhancement for Springroll
 title: "[Feature]: "
 labels:
   - enhancement
 body:
   - type: markdown
     attributes:
-      value: "Thank you for your interest in improving Stremio-Web! Please provide as much detail as possible."
+      value: "Thank you for your interest in improving Springroll! Please provide as much detail as possible."
 
   - type: textarea
     id: feature_description

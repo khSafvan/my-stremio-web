@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" fill="none">
+  <defs>
+    <linearGradient id="logoTicketGrad" x1="20" y1="20" x2="110" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD54F" />
+      <stop offset="50%" stop-color="#FFC107" />
+      <stop offset="100%" stop-color="#FF8F00" />
+    </linearGradient>
+    <linearGradient id="logoInnerGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#181820" />
+      <stop offset="100%" stop-color="#0D0D11" />
+    </linearGradient>
+  </defs>
+
+  <!-- Cinema Ticket Emblem -->
+  <g transform="translate(15, 20) scale(0.24)">
+    <rect x="20" y="50" width="380" height="300" rx="60" fill="url(#logoTicketGrad)" />
+    <rect x="65" y="105" width="42" height="56" rx="18" fill="url(#logoInnerGrad)" />
+    <rect x="65" y="240" width="42" height="56" rx="18" fill="url(#logoInnerGrad)" />
+    <rect x="313" y="105" width="42" height="56" rx="18" fill="url(#logoInnerGrad)" />
+    <rect x="313" y="240" width="42" height="56" rx="18" fill="url(#logoInnerGrad)" />
+    <path d="M180 135 L280 200 L180 265 Z" fill="url(#logoInnerGrad)" />
+  </g>
+
+  <!-- Wordmark: springroll -->
+  <text x="135" y="76" font-family="Plus Jakarta Sans, Inter, system-ui, -apple-system, sans-serif" font-weight="800" font-size="52" letter-spacing="-1.5px">
+    <tspan fill="#EDEDF2">spring</tspan><tspan fill="#FFC107">roll</tspan>
+  </text>
+</svg>

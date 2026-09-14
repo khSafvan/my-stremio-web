@@ -1,18 +1,18 @@
 name: Bug report
-description: Report a bug in Stremio-Web
+description: Report a bug in Springroll
 title: "[Bug]: "
 labels:
   - bug
 body:
   - type: dropdown
-    id: stremio_web_version
+    id: springroll_version
     attributes:
-      label: "Stremio-Web Version"
-      description: "Select the version of the Stremio-Web app you are using"
+      label: "Springroll Version"
+      description: "Select the version of Springroll you are using"
       options:
         - /development branch
-        - web.stremio.com
-        - web.strem.io
+        - Desktop App
+        - Web App
     validations:
       required: true
 

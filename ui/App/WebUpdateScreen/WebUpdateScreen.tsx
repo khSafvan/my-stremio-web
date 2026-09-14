@@ -33,7 +33,7 @@ const WebUpdateScreen = () => {
             >
                 <img
                     className={styles['logo']}
-                    src={require('/assets/images/stremio_symbol.png')}
+                    src={require('/assets/images/springroll_symbol.png')}
                     alt={''}
                 />
                 <div className={styles['title']}>

@@ -34,6 +34,7 @@ import UpdateBanner from './UpdateBanner';
 import Video from './Video';
 import ActionsGroup from './ActionsGroup';
 import SpringrollLogo from './SpringrollLogo';
+import SpringrollIcon from './SpringrollIcon';
 
 export {
     AddonDetailsModal,
@@ -72,6 +73,7 @@ export {
     UpdateBanner,
     Video,
     ActionsGroup,
-    SpringrollLogo
+    SpringrollLogo,
+    SpringrollIcon
 };
 
