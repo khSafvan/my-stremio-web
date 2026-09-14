@@ -1,63 +1,79 @@
 <div align="center">
 
-<img src="/assets/images/stremio_symbol.png" width="90" alt="Stremio logo">
+# 🎬 Serivia Desktop
 
-# Stremio Desktop (Tauri v2)
+**Next-Generation High-Performance Streaming Platform**
 
-**Freedom to Stream** — Modern, high-performance Linux desktop application powered by **Tauri v2**, **React**, **WebAssembly**, and an integrated **Stremio Streaming Server (EngineFS)**.
+*Crafted with Tauri v2, Native In-Process libmpv OpenGL Video Acceleration, WebAssembly Core Engine, and AI Video Enhancements.*
 
-[![Version](https://img.shields.io/github/package-json/v/Stremio/stremio-web/development?label=version&color=7b5bf5)](https://github.com/Stremio/stremio-web/releases)
-[![License](https://img.shields.io/github/license/Stremio/stremio-web?color=7b5bf5)](/LICENSE.md)
-
-[Website](https://www.stremio.com) · [Report an Issue](https://github.com/Stremio/stremio-web/issues/new/choose)
+[![License: GPL-2.0](https://img.shields.io/badge/License-GPL%202.0-orange.svg)](/LICENSE.md)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux%20(X11%20%2F%20Wayland)-00C49F.svg)](#)
+[![Design: Flat Minimalist](https://img.shields.io/badge/Design-Modern%20Flat%20OLED-FF6600.svg)](#)
 
 </div>
 
 ---
 
-## ✨ Features
+## 🌟 Overview
 
-- 🖥️ **Native Linux Desktop (Tauri v2)** — Lightweight, memory-efficient native desktop application replacing legacy heavy wrappers.
-- ⚡ **Integrated Streaming Server** — Bundled official Stremio Streaming Server (`server/server.js` v4.21.1 EngineFS) running locally on `127.0.0.1:11470` and automatically managed by Rust process supervisors.
-- 🎬 **Cinematic Hero Banner** — Dynamic top carousel highlighting featured titles from active catalogs with quick playback actions.
-- 📐 **Modern Flat UI** — Ultra-lightweight flat dark surfaces (`#0b0c10`, `#14171f`) with clean 1px borders, zero GPU-heavy backdrop blur, and zero gradient repainting bottlenecks.
-- 📚 **Direct Library & New Episodes Shelves** — Quick home screen access to Continue Watching, unwatched new episodes with notification badges, and personal Library shelves.
-- 🏷️ **Instant Category Filtering** — Smooth flat pill filters for *All*, *Movies*, *Series*, *Anime*, and *Channels* with live catalog updates.
-- 🧩 **Addon-Powered Catalogs** — Infinite discoverability for movies, series, YouTube, and live channels powered by community addons.
-- 🔄 **Universal Sync** — Seamlessly synchronizes your library, watch progress, and addon configurations across all your devices.
-- 📺 **Chromecast Streaming** — Cast videos directly to big screens and smart TVs.
-- 💬 **Advanced Subtitles** — Custom sizing, colors, font offsets, and real-time addon subtitle integration.
-- ⌨️ **Keyboard & Gamepad First** — Full navigation and playback support without requiring a mouse.
-- 🌍 **50+ Languages** — Community localized via [stremio-translations](https://github.com/Stremio/stremio-translations).
+**Serivia** is a high-performance, cinema-grade streaming hub built for modern desktop systems and big screens. Inspired by modern minimalist interfaces (**Serivia UI, Arctic Fuse 3, Apple TV+**), Serivia unites home recommendations and deep catalog discovery into a seamless, unified discovery experience while dramatically reducing resource overhead on low-power and high-end hardware alike.
 
 ---
 
-## 🛠 Architecture
+## ✨ Key Features & Innovations
 
-Stremio Desktop combines high-performance native Rust desktop integration with a sandboxed WebAssembly engine:
+- 🖥️ **Native In-Process `libmpv` FFI Integration**:
+  - Direct hardware-accelerated video rendering via `GtkGLArea` under a transparent WebKit GTK overlay.
+  - Zero-copy native hardware decoding (`vaapi`, `nvdec`, `vdpau`) without IPC desync or window tearing on Wayland and X11 tiling window managers (Hyprland, Sway, i3, GNOME, KDE).
+- ✨ **In-Player AI Video Enhancement Shaders**:
+  - Zero-latency GPU shader pipeline integrated directly into the player HUD.
+  - **FidelityFX CAS** (Contrast Adaptive Sharpening) for ultra-crisp 1080p $\rightarrow$ 4K clarity on live-action streams.
+  - **Anime4K Lite** for fast real-time line reconstruction on animation.
+  - *Strictly OFF by default* to preserve zero idle GPU overhead.
+- ⚡ **Hardware Tier Resource Management**:
+  - Memory-aware single-stream buffer control (Tier 1 $\le$ 8GB, Tier 2 8–16GB, Tier 3 > 16GB).
+  - Eliminates wasteful preloading of unplayed episodes, dedicating 100% of bandwidth and buffer cache to active stream playback.
+- 🧭 **Unified Discovery & Home Hub**:
+  - Seamlessly merges Home and Discover into a single primary dock entry.
+  - Instant view switcher: toggle between **`[ ☰ Curated Shelves ]`** and **`[ ⊞ Deep Catalog Grid ]`** with genre/year filters without full-page reloads.
+  - Quick category filtering across *All, Movies, Series, Anime,* and *Channels*.
+- 📐 **Modern Architectural Flat Design System**:
+  - Strict 4px geometry, OLED layered charcoal surfaces (`#0B0B0E`, `#121217`, `#1A1A22`, `#242430`), hairline borders (`#2C2C3A`), and warm gold ratings (`#FFC107`).
+  - CSS layout containment (`contain: content; content-visibility: auto;`) and zero GPU-heavy blur rasterization bottlenecks for fluid 60fps scrolling on Intel iGPUs.
+- 🔄 **Integrated Streaming Engine**:
+  - Local supervisor managing the embedded streaming server daemon on `127.0.0.1:11470`.
+
+---
+
+## 🏗️ Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Tauri["Tauri v2 Native Desktop (Rust)"]
-        Window["Native Window & Webview"]
+    subgraph Desktop["Serivia Native Desktop (Tauri v2 + GTK)"]
+        Window["GtkApplicationWindow"]
+        Overlay["GtkOverlay"]
+        GLArea["GtkGLArea (libmpv FFI Video Canvas)"]
+        Webview["WebKitWebView (Transparent React UI)"]
         Supervisor["Streaming Server Supervisor"]
     end
 
-    subgraph Core["Frontend & Engine"]
-        UI["React Flat UI"]
+    subgraph Frontend["Serivia Frontend Engine"]
+        UI["Serivia Flat React UI"]
         WASM["stremio-core WASM Worker"]
-        Player["stremio-video Player"]
+        PlayerHUD["libmpv HUD & Shader Controls"]
     end
 
     subgraph Engine["Streaming Engine"]
-        Server["Local Server (EngineFS)<br>127.0.0.1:11470"]
+        Server["Local Streaming Server<br>127.0.0.1:11470"]
     end
 
-    Window --> UI
+    Window --> Overlay
+    Overlay --> GLArea
+    Overlay --> Webview
+    Webview --> UI
     UI <--> WASM
-    UI --> Player
+    UI --> PlayerHUD
     Supervisor <--> Server
-    Player -. Streams .-> Server
 ```
 
 ---
@@ -65,35 +81,27 @@ flowchart LR
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Rust / Cargo**: `v1.75+` (for compiling and running the native Linux app)
-- **Node.js** or **Bun**: (Only required if running the streaming server or recompiling UI)
+- **Linux** (Ubuntu, Debian, Arch, Fedora, openSUSE, etc.)
+- **Rust / Cargo** `v1.77+`
+- **libmpv** development libraries (`libmpv-dev` / `mpv-libs-devel`)
+- **GTK3** development libraries (`libgtk-3-dev`)
 
-### Quick Start (Launch Native Linux Client)
-
-You do **not** need to install packages or run `pnpm install`. All frontend assets are already embedded into the Rust desktop binary. Simply run:
-
-```bash
-# Launch Stremio Desktop with Cargo
-cargo run --bin stremio
-
-# Or use the helper script:
-./scripts/dev.sh
-```
-
----
-
-## 📦 Building Distribution Packages
-
-To compile the native production Linux binaries and distribution packages (`.AppImage` and `.deb`):
+### Quick Launch (Dev Mode)
 
 ```bash
-pnpm run build
-# or:
-./scripts/build.sh
+# Launch Serivia Desktop directly with Cargo:
+cargo run --bin serivia
+
+# Or use the developer launcher script:
+./scripts/desktop.sh
 ```
 
-Compiled packages are saved to:
-`src-tauri/target/release/bundle/`
+### Compiling Production Binaries
+
+```bash
+# Build optimized native binary (target/release/serivia):
+./scripts/build.sh --release
+```
 
 ---
 
@@ -101,17 +109,21 @@ Compiled packages are saved to:
 
 | Command | Script Equivalent | Description |
 |---|---|---|
-| `cargo run --bin stremio` | `./scripts/dev.sh` | Launch Stremio Linux desktop client directly |
-| `cargo build --bin stremio` | `./scripts/build.sh` | Compile native debug binary (`target/debug/stremio`) |
-| `cargo build --release --bin stremio` | `./scripts/build.sh --release` | Compile optimized release binary (`target/release/stremio`) |
-| `npm test` / `pnpm test` | `./scripts/test.sh` | Run Jest unit tests and AST translation check |
+| `cargo run --bin serivia` | `./scripts/dev.sh` | Launch Serivia Linux desktop client directly |
+| `cargo build --bin serivia` | `./scripts/build.sh` | Compile native debug binary (`target/debug/serivia`) |
+| `cargo build --release --bin serivia` | `./scripts/build.sh --release` | Compile optimized release binary (`target/release/serivia`) |
+| `npm run build:ui` / `pnpm run build:ui` | - | Recompile the frontend Webpack production bundle |
+| `npm run test` / `pnpm test` | `./scripts/test.sh` | Run Jest unit tests |
 | `npm run lint` / `pnpm run lint` | `./scripts/lint.sh` | Run ESLint check |
-| `npm run lint:fix` / `pnpm run lint:fix` | `./scripts/lint.sh --fix` | Automatically fix linting violations |
-| `npm run server:download` | `./scripts/download-server.sh` | Download official Stremio EngineFS server bundle |
-| `npm run server:run` | `./scripts/run-server.sh` | Run standalone local streaming server on port 11470 |
 
 ---
 
-## 📄 License
+## 🙏 Credits & Acknowledgements
 
-Copyright © 2017-2026 Smart Code OOD. Released under the GPL-2.0 license — see [LICENSE](/LICENSE.md).
+Serivia is proudly developed upon the open-source foundations of the **Stremio** ecosystem. We extend our deep gratitude and full credit to:
+
+- **Smart Code OOD** and the **Stremio Open-Source Project** ([Stremio GitHub](https://github.com/Stremio)) for creating the exceptional Stremio Core protocol, addon architecture, streaming engine (EngineFS), and community translations.
+- **jurialmunkey** for the brilliant UI concepts and widget hub inspiration from **Arctic Fuse 3**.
+- The **libmpv** development team for the world-class open-source media player engine.
+
+All code originally derived from Stremio is licensed under **GPL-2.0** in accordance with its upstream licensing terms. See [`LICENSE.md`](/LICENSE.md) for complete license details.

@@ -95,12 +95,15 @@
     --border-radius: 4px;
 
     // Flat UI Components (Solid color-blocking, zero drop-shadow)
+    --outer-glow: none !important;
+    --box-shadow-flat: none !important;
     --flat-card-border: 1px solid #2c2c3a;
     --flat-card-border-hover: 2px solid #ff6600;
     --flat-card-bg: #17171e;
     --flat-pill-bg: #17171e;
     --flat-pill-bg-active: #ff6600;
     --flat-pill-border: 1px solid #2c2c3a;
+    --stream-badge-radius: 3px;
 
     // Z-Index Tokens
     --z-dropdown: @z-index-dropdown;
@@ -111,7 +114,7 @@
     --z-tooltip: @z-index-tooltip;
     --z-toast: @z-index-toast;
 
-    // Transitions
+    // Transitions (Fast and Hardware Accelerated)
     --transition-fast: @transition-fast;
     --transition-normal: @transition-normal;
 }

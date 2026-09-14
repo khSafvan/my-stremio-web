@@ -17,13 +17,17 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 1rem;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
     border-radius: var(--border-radius);
+    background-color: var(--flat-surface-1, #17171e);
+    border: 1px solid var(--flat-border, #2c2c3a);
+    transition: border-color 140ms ease-in-out, background-color 140ms ease-in-out;
 
     &:hover,
     &:focus {
-        background-color: var(--overlay-color);
+        border-color: var(--flat-accent, #ff6600);
+        background-color: var(--flat-surface-2, #21212b);
     }
 
     &:hover,

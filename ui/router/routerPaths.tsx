@@ -12,7 +12,7 @@ export default [
     },
     {
         path: '/discover/:transportUrl?/:type?/:catalogId?',
-        view: 1,
+        view: 0,
         element: <routes.Discover />,
     },
     {

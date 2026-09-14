@@ -43,11 +43,12 @@
 
     .background-image-layer {
         position: absolute;
-        top: -10px;
-        right: -10px;
-        bottom: -10px;
-        left: -10px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
         z-index: -1;
+        overflow: hidden;
 
         .background-image {
             display: block;
@@ -55,8 +56,9 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
-            filter: blur(10px);
-            opacity: 0.3;
+            opacity: 0.22;
+            mask-image: radial-gradient(circle at 60% 35%, black 25%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at 60% 35%, black 25%, transparent 80%);
         }
     }
 

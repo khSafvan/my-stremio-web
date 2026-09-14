@@ -2840,6 +2840,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "serivia"
+version = "5.0.0"
+dependencies = [
+ "gdk",
+ "gtk",
+ "libc",
+ "libmpv2",
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-log",
+]
+
+[[package]]
 name = "servo_arc"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2952,22 +2968,6 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
-
-[[package]]
-name = "stremio"
-version = "5.0.0"
-dependencies = [
- "gdk",
- "gtk",
- "libc",
- "libmpv2",
- "log",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-log",
-]
 
 [[package]]
 name = "string_cache"

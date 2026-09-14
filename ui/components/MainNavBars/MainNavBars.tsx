@@ -7,8 +7,7 @@ import { useContentGamepadNavigation, useVerticalNavGamepadNavigation } from 'st
 import styles from './MainNavBars.less';
 
 const TABS = [
-    { id: 'board', label: 'Board', icon: 'home', href: '/' },
-    { id: 'discover', label: 'Discover', icon: 'discover', href: '/discover' },
+    { id: 'board', label: 'Home', icon: 'home', href: '/' },
     { id: 'library', label: 'Library', icon: 'library', href: '/library' },
     { id: 'calendar', label: 'Calendar', icon: 'calendar', href: '/calendar' },
     { id: 'addons', label: 'ADDONS', icon: 'addons', href: '/addons' },
@@ -26,7 +25,9 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
     const navRef = React.useRef(null);
     const contentRef = React.useRef(null);
 
-    const navRoute = route === 'continue_watching' ? 'library' : (route ?? '');
+    const navRoute = (route === 'discover' || route === 'board')
+        ? 'board'
+        : (route === 'continue_watching' ? 'library' : (route ?? ''));
     useContentGamepadNavigation(contentRef, navRoute);
     useVerticalNavGamepadNavigation(navRef, navRoute);
 
@@ -44,7 +45,7 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
             <VerticalNavBar
                 ref={navRef}
                 className={styles['vertical-nav-bar']}
-                selected={route}
+                selected={navRoute}
                 tabs={TABS}
             />
             <div ref={contentRef} className={styles['nav-content-container']}>{children}</div>

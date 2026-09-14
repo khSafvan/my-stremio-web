@@ -29,6 +29,7 @@ const HeroBanner = require('./HeroBanner');
 const CategoryPills = require('./CategoryPills');
 const styles = require('./styles');
 const { default: StreamingServerWarning } = require('./StreamingServerWarning');
+const { useSearchParams, useNavigate } = require('react-router-dom');
 const { useCore } = require('stremio/core');
 
 const THRESHOLD = 5;
@@ -36,13 +37,39 @@ const THRESHOLD = 5;
 const Board = () => {
     const t = useTranslate();
     const core = useCore();
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const streamingServer = useStreamingServer();
     const continueWatchingPreview = useContinueWatchingPreview();
     const [board, loadBoardRows] = useBoard();
     const notifications = useNotifications();
     const profile = useProfile();
     const libraryCatalog = useBoardLibrary();
-    const [selectedCategory, setSelectedCategory] = React.useState('all');
+
+    const categoryParam = searchParams.get('category') || searchParams.get('type') || 'all';
+    const [selectedCategory, setSelectedCategory] = React.useState(categoryParam);
+
+    React.useEffect(() => {
+        if (categoryParam && categoryParam !== selectedCategory) {
+            setSelectedCategory(categoryParam);
+        }
+    }, [categoryParam]);
+
+    const onSelectCategory = React.useCallback((cat) => {
+        setSelectedCategory(cat);
+        if (cat === 'all') {
+            setSearchParams({}, { replace: true });
+        } else {
+            setSearchParams({ category: cat }, { replace: true });
+        }
+    }, [setSearchParams]);
+
+    const onViewModeChange = React.useCallback((mode) => {
+        if (mode === 'grid') {
+            const typePart = selectedCategory === 'all' ? '' : `/${selectedCategory}`;
+            navigate(`/discover${typePart}`);
+        }
+    }, [selectedCategory, navigate]);
 
     // Auto-reconnect to streaming server if previously failed
     React.useEffect(() => {
@@ -163,10 +190,12 @@ const Board = () => {
                         library={libraryCatalog}
                     />
 
-                    {/* 2. Flat Category & Quick Filter Pills */}
+                    {/* 2. Flat Category & Quick Filter Pills with View Switcher */}
                     <CategoryPills
                         selected={selectedCategory}
-                        onSelect={setSelectedCategory}
+                        onSelect={onSelectCategory}
+                        viewMode={'shelves'}
+                        onViewModeChange={onViewModeChange}
                     />
 
                     {/* 3. Continue Watching Shelf (16:9 Landscape) */}

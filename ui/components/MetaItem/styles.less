@@ -29,14 +29,16 @@
 
         .poster-container {
             border-color: var(--primary-accent-color);
-            box-shadow: 0 0 0 2px var(--primary-accent-color);
+            outline: 2px solid var(--primary-accent-color);
+            outline-offset: -1px;
+            box-shadow: none;
 
             .dismiss-icon-layer {
                 opacity: 1;
             }
 
             .poster-image-layer {
-                transform: scale(1.05);
+                transform: scale(1.04);
             }
 
             .play-icon-layer {
@@ -113,7 +115,9 @@
         &:global(.selected) {
             .poster-container {
                 border-color: var(--primary-accent-color, #ff6600);
-                box-shadow: 0 0 16px rgba(255, 102, 0, 0.25);
+                outline: 2px solid var(--primary-accent-color, #ff6600);
+                outline-offset: -1px;
+                box-shadow: none;
             }
         }
 
@@ -166,9 +170,9 @@
     .poster-container {
         position: relative;
         z-index: 0;
-        background-color: var(--overlay-color);
+        background-color: var(--flat-surface-1, #17171e);
         border-radius: var(--border-radius);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--flat-border, #2c2c3a);
         transition:
             scale 100ms ease-out,
             border-color 150ms ease-out;

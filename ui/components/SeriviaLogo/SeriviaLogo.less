@@ -1,0 +1,33 @@
+.serivia-logo-container {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.625rem;
+    user-select: none;
+    text-decoration: none;
+
+    &.clickable {
+        cursor: pointer;
+    }
+
+    .serivia-icon {
+        width: 1.875rem;
+        height: 1.875rem;
+        flex-shrink: 0;
+        filter: drop-shadow(0 2px 8px rgba(255, 193, 7, 0.28));
+        transition: transform 0.15s ease-in-out;
+    }
+
+    &:hover .serivia-icon {
+        transform: scale(1.06);
+    }
+
+    .serivia-wordmark {
+        font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--flat-text-primary, #EDEDF2);
+    }
+}

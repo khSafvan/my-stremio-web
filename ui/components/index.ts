@@ -33,6 +33,7 @@ import Transition from './Transition';
 import UpdateBanner from './UpdateBanner';
 import Video from './Video';
 import ActionsGroup from './ActionsGroup';
+import SeriviaLogo from './SeriviaLogo';
 
 export {
     AddonDetailsModal,
@@ -70,5 +71,6 @@ export {
     Transition,
     UpdateBanner,
     Video,
-    ActionsGroup
+    ActionsGroup,
+    SeriviaLogo
 };

@@ -3,12 +3,14 @@
 const React = require('react');
 const { useTranslation } = require('react-i18next');
 const { useParams } = require('react-router');
-const { useSearchParams } = require('react-router-dom');
+const { useSearchParams, useNavigate } = require('react-router-dom');
 const classnames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { useCore } = require('stremio/core');
 const { CONSTANTS, useBinaryState, useOnScrollToBottom, withCoreSuspender } = require('stremio/common');
 const { AddonDetailsModal, Button, DelayedRenderer, Image, MainNavBars, MetaItem, MetaPreview, ModalDialog, MultiselectMenu } = require('stremio/components');
+const { default: toPath } = require('stremio-router/toPath');
+const CategoryPills = require('stremio/routes/Board/CategoryPills');
 const useDiscover = require('./useDiscover');
 const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
@@ -22,6 +24,7 @@ const Discover = () => {
         transportUrl,
         catalogId
     }), [type, transportUrl, catalogId]);
+    const navigate = useNavigate();
     const [queryParams] = useSearchParams();
     const { t } = useTranslation();
     const core = useCore();
@@ -30,6 +33,34 @@ const Discover = () => {
     const [inputsModalOpen, openInputsModal, closeInputsModal] = useBinaryState(false);
     const [addonModalOpen, openAddonModal, closeAddonModal] = useBinaryState(false);
     const [selectedMetaItemIndex, setSelectedMetaItemIndex] = React.useState(0);
+
+    const activeType = discover.selected?.request?.path?.type || type || 'movie';
+
+    const categoryPillsList = React.useMemo(() => {
+        const types = Array.isArray(discover.selectable?.types)
+            ? discover.selectable.types.map((item) => item.type)
+            : ['movie', 'series', 'anime', 'channel'];
+        return ['all', ...types.filter((item) => item !== 'all')];
+    }, [discover.selectable?.types]);
+
+    const onSelectCategoryPill = React.useCallback((cat) => {
+        if (cat === 'all') {
+            navigate('/');
+            return;
+        }
+        const matchingType = discover.selectable?.types?.find((item) => item.type === cat);
+        if (matchingType && matchingType.deepLinks?.discover) {
+            navigate(toPath(matchingType.deepLinks.discover));
+        } else {
+            navigate(`/discover/${cat}`);
+        }
+    }, [discover.selectable?.types, navigate]);
+
+    const onViewModeChange = React.useCallback((mode) => {
+        if (mode === 'shelves') {
+            navigate(`/?category=${activeType}`);
+        }
+    }, [activeType, navigate]);
 
     const selectedMetaItem = React.useMemo(() => {
         return discover.catalog?.content.type === 'Ready' &&
@@ -131,6 +162,15 @@ const Discover = () => {
         <MainNavBars className={styles['discover-container']} route={'discover'}>
             <div className={styles['discover-content']}>
                 <div className={styles['catalog-container']}>
+                    <div className={styles['discover-header-bar']}>
+                        <CategoryPills
+                            categories={categoryPillsList}
+                            selected={activeType}
+                            onSelect={onSelectCategoryPill}
+                            viewMode={'grid'}
+                            onViewModeChange={onViewModeChange}
+                        />
+                    </div>
                     <div className={styles['selectable-inputs-container']}>
                         {selectInputs.map(({ title, options, value, onSelect }, index) => (
                             <MultiselectMenu

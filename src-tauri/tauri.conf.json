@@ -1,15 +1,15 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "springroll",
+  "productName": "serivia",
   "version": "5.0.0",
-  "identifier": "com.springroll.desktop",
+  "identifier": "com.serivia.desktop",
   "build": {
     "frontendDist": "../build"
   },
   "app": {
     "windows": [
       {
-        "title": "Springroll",
+        "title": "Serivia",
         "width": 1280,
         "height": 800,
         "minWidth": 800,

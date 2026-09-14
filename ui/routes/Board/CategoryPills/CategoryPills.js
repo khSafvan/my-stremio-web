@@ -10,7 +10,13 @@ const styles = require('./styles');
 
 const DEFAULT_CATEGORIES = ['all', 'movie', 'series', 'anime', 'channel'];
 
-const CategoryPills = ({ categories = DEFAULT_CATEGORIES, selected = 'all', onSelect }) => {
+const CategoryPills = ({
+    categories = DEFAULT_CATEGORIES,
+    selected = 'all',
+    onSelect,
+    viewMode = 'shelves',
+    onViewModeChange
+}) => {
     const t = useTranslate();
 
     const getCategoryLabel = (category) => {
@@ -53,6 +59,33 @@ const CategoryPills = ({ categories = DEFAULT_CATEGORIES, selected = 'all', onSe
                     );
                 })}
             </div>
+
+            {typeof onViewModeChange === 'function' && (
+                <div className={styles['view-switcher-container']}>
+                    <button
+                        type={'button'}
+                        className={classnames(styles['view-button'], {
+                            [styles['selected']]: viewMode === 'shelves'
+                        })}
+                        title={'Shelves View'}
+                        onClick={() => onViewModeChange('shelves')}
+                    >
+                        <Icon className={styles['view-icon']} name={'episodes'} />
+                        <span className={styles['view-label']}>Shelves</span>
+                    </button>
+                    <button
+                        type={'button'}
+                        className={classnames(styles['view-button'], {
+                            [styles['selected']]: viewMode === 'grid'
+                        })}
+                        title={'Catalog Grid View'}
+                        onClick={() => onViewModeChange('grid')}
+                    >
+                        <Icon className={styles['view-icon']} name={'discover'} />
+                        <span className={styles['view-label']}>Grid</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
@@ -60,7 +93,9 @@ const CategoryPills = ({ categories = DEFAULT_CATEGORIES, selected = 'all', onSe
 CategoryPills.propTypes = {
     categories: PropTypes.arrayOf(PropTypes.string),
     selected: PropTypes.string,
-    onSelect: PropTypes.func
+    onSelect: PropTypes.func,
+    viewMode: PropTypes.oneOf(['shelves', 'grid']),
+    onViewModeChange: PropTypes.func
 };
 
 module.exports = CategoryPills;

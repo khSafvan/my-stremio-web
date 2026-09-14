@@ -33,10 +33,10 @@ MODE="${1:-}"
 
 if [ "${MODE}" = "--release" ] || [ "${MODE}" = "release" ]; then
     echo "==> Compiling optimized release binary with Cargo..."
-    cargo build --release --bin stremio
-    echo "==> Release binary compiled to: ${PROJECT_ROOT}/target/release/stremio"
+    cargo build --release --bin serivia
+    echo "==> Release binary compiled to: ${PROJECT_ROOT}/target/release/serivia"
 else
-    echo "==> Compiling Stremio Desktop binary with Cargo..."
-    cargo build --bin stremio
-    echo "==> Binary compiled to: ${PROJECT_ROOT}/target/debug/stremio"
+    echo "==> Compiling Serivia Desktop binary with Cargo..."
+    cargo build --bin serivia
+    echo "==> Binary compiled to: ${PROJECT_ROOT}/target/debug/serivia"
 fi
