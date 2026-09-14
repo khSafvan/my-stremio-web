@@ -1,6 +1,5 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
-const Addons = require('./Addons');
 const Board = require('./Board');
 const Discover = require('./Discover');
 const Library = require('./Library');
@@ -13,7 +12,6 @@ const Player = require('./Player');
 const Intro = require('./Intro');
 
 module.exports = {
-    Addons,
     Board,
     Discover,
     Library,

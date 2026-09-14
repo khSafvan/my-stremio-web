@@ -64,6 +64,9 @@ type UseSubtitlesArgs = {
     closeMenus: () => void,
     closeSubtitlesMenu: () => void,
     toggleSubtitlesMenu: () => void,
+    mediaId?: string,
+    videoId?: string,
+    mediaType?: string,
 };
 
 type SubtitlesMenuProps = {

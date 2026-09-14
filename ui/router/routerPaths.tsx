@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2025 Smart code 203358507
 
 import React from 'react';
+import { Navigate } from 'react-router';
 import routes from 'stremio/routes';
 import { PLAYER_PATH, META_DETAILS_PATH, LEGACY_META_DETAILS_PATH } from './getBackFallback';
 
@@ -48,7 +49,7 @@ export default [
     {
         path: '/addons/:type?/:transportUrl?/:catalogId?',
         view: 3,
-        element: <routes.Addons />,
+        element: <Navigate to="/settings" replace />,
     },
     {
         path: '/settings',

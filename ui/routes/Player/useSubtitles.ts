@@ -1,8 +1,9 @@
 // Copyright (C) 2017-2026 Smart code 203358507
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CONSTANTS, languages, useFileDropListener, useShortcut, useToast } from 'stremio/common';
+import { fetchUnifiedSubtitles } from 'stremio/services/UnifiedMedia/openSubtitlesClient';
 import { snapSubtitleDelay, SUBTITLES_DELAY_STEP_MS } from './subtitleDelay';
 
 const withFallbackLabels = (tracks?: SubtitleTrack[] | null): SubtitleTrack[] => {
@@ -169,6 +170,9 @@ const useSubtitles = ({
     closeMenus,
     closeSubtitlesMenu,
     toggleSubtitlesMenu,
+    mediaId,
+    videoId,
+    mediaType,
 }: UseSubtitlesArgs): UseSubtitlesResult => {
     const { t } = useTranslation();
     const { setSubtitlesTrack, setExtraSubtitlesTrack, setSubtitlesDelay, setSubtitlesSize, setSubtitlesOffset } = video;
@@ -178,17 +182,56 @@ const useSubtitles = ({
     const trackSelectionLocked = useRef(false);
     const appliedTrack = useRef<{ id: string, source: SubtitleSource } | null>(null);
     const lastSelectedTrack = useRef<SelectedSubtitleTrack | null>(null);
+    const [nativeSubtitles, setNativeSubtitles] = useState<SubtitleTrack[]>([]);
 
     videoRef.current = video;
     settingsRef.current = settings;
+
+    // Fetch native OpenSubtitles directly when media stream loads
+    useEffect(() => {
+        let isCancelled = false;
+        const currentStream = video.state.stream;
+        if (!currentStream) {
+            setNativeSubtitles([]);
+            return;
+        }
+
+        const streamPathId = player.selected?.streamRequest?.path?.id;
+        const targetVideoId = videoId || streamPathId || mediaId;
+        const targetType = mediaType || (targetVideoId?.includes(':') ? 'series' : 'movie');
+
+        if (!targetVideoId) return;
+
+        fetchUnifiedSubtitles({
+            type: targetType,
+            id: targetVideoId,
+        }).then((tracks) => {
+            if (!isCancelled && Array.isArray(tracks) && tracks.length > 0) {
+                setNativeSubtitles(tracks as SubtitleTrack[]);
+            }
+        }).catch((err) => {
+            console.warn('[Springroll Subtitles] Direct subtitles lookup error:', err);
+        });
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [video.state.stream, player.selected, mediaId, videoId, mediaType]);
 
     const streamSubtitles = useMemo(() => {
         return withFallbackLabels(player.selected?.stream.subtitles);
     }, [player.selected]);
 
     const externalSubtitles = useMemo(() => {
-        return withFallbackLabels(player.subtitles);
-    }, [player.subtitles]);
+        const fromPlayer = withFallbackLabels(player.subtitles);
+        const combined = [...nativeSubtitles];
+        for (const track of fromPlayer) {
+            if (!combined.some((t) => t.id === track.id)) {
+                combined.push(track);
+            }
+        }
+        return combined;
+    }, [nativeSubtitles, player.subtitles]);
 
     const allTracks = useMemo(() => {
         return video.state.subtitlesTracks.concat(video.state.extraSubtitlesTracks);
@@ -286,6 +329,17 @@ const useSubtitles = ({
         appliedTrack.current = { id: track.id, source: 'external' };
         setExtraSubtitlesTrack(track.id);
         rememberTrack(track, false);
+
+        if (track.url && typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+            try {
+                import('@tauri-apps/api/core').then(({ invoke }) => {
+                    invoke('shell_send_mpv', {
+                        method: 'mpv-command',
+                        args: ['sub-add', track.url, 'select'],
+                    }).catch(() => {});
+                }).catch(() => {});
+            } catch {}
+        }
     }, [disableSubtitles, rememberTrack, setExtraSubtitlesTrack]);
 
     const changeDelay = useCallback((delay: number) => {

@@ -197,6 +197,9 @@ const Player = () => {
         closeMenus,
         closeSubtitlesMenu,
         toggleSubtitlesMenu,
+        mediaId: urlParams.id,
+        videoId: urlParams.videoId,
+        mediaType: urlParams.type,
     });
 
     const defaultAudioTrackSelected = React.useRef(false);
