@@ -348,3 +348,40 @@ export function filterPlayableStreams(
         return true;
     });
 }
+
+/**
+ * Fetches subtitles directly from an AIOStreams or Addon endpoint.
+ * Queries `${cleanBaseUrl}/subtitles/${type}/${encodeURIComponent(id)}.json`.
+ */
+export async function fetchAddonSubtitles(
+    addonUrl: string,
+    media: { type: string; id: string },
+    timeoutMs = 6000
+): Promise<any[]> {
+    const cleanBaseUrl = normalizeAddonBaseUrl(addonUrl);
+    if (!cleanBaseUrl) return [];
+
+    const endpoint = `${cleanBaseUrl}/subtitles/${media.type}/${encodeURIComponent(media.id)}.json`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal,
+        });
+
+        if (!response.ok) return [];
+
+        const data = await response.json();
+        if (data && Array.isArray(data.subtitles)) {
+            return data.subtitles;
+        }
+        return [];
+    } catch {
+        return [];
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}

@@ -174,6 +174,35 @@ export async function fetchUnifiedSubtitles(options: {
 
     const normalizedType = type === 'tv' ? 'series' : type;
 
+    // 0. Active AIOStreams instance subtitles (if user has configured AIOStreams with subtitles)
+    try {
+        const { loadAIOConfig } = await import('../AIOStreams/storage');
+        const aioConfig = loadAIOConfig();
+        if (aioConfig?.manifestUrl) {
+            const { fetchAddonSubtitles } = await import('../AIOStreams/aiostreamsClient');
+            const aioSubs = await fetchAddonSubtitles(aioConfig.manifestUrl, {
+                type: normalizedType,
+                id: cleanId,
+            });
+            if (Array.isArray(aioSubs)) {
+                for (const sub of aioSubs) {
+                    if (sub && sub.url) {
+                        results.push({
+                            id: `aio_${sub.id || Math.random().toString(36).slice(2)}`,
+                            lang: sub.lang || 'eng',
+                            label: sub.label || sub.subtitleFileName || sub.movieReleaseName || sub.lang || 'AIO Subtitles',
+                            origin: 'AIOStreams',
+                            url: sub.url,
+                            embedded: false,
+                        });
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('[OpenSubtitles] AIOStreams subtitles lookup error:', e);
+    }
+
     // 1. Direct high-speed OpenSubtitles endpoint (Zero-config, fast, no rate-limits)
     try {
         const directUrl = `https://opensubtitles-v3.strem.io/subtitles/${normalizedType}/${encodeURIComponent(cleanId)}.json`;
