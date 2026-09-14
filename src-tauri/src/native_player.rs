@@ -253,17 +253,18 @@ impl NativePlayer {
 
                     match RenderContext::new(mpv_handle, render_params) {
                         Ok(mut rc) => {
-                            let (sender, receiver) = gtk::glib::MainContext::channel::<()>(gtk::glib::Priority::default());
+                            let (sender, receiver) = async_channel::unbounded::<()>();
                             let gl_area_cb = gl_area_weak.clone();
-                            receiver.attach(None, move |()| {
-                                if let Some(area) = gl_area_cb.upgrade() {
-                                    area.queue_render();
+                            gtk::glib::MainContext::default().spawn_local(async move {
+                                while let Ok(()) = receiver.recv().await {
+                                    if let Some(area) = gl_area_cb.upgrade() {
+                                        area.queue_render();
+                                    }
                                 }
-                                gtk::glib::ControlFlow::Continue
                             });
 
                             rc.set_update_callback(move || {
-                                let _ = sender.send(());
+                                let _ = sender.try_send(());
                             });
                             if let Ok(mut guard) = render_ctx_clone.lock() {
                                 *guard = Some(rc);
