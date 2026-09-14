@@ -1,25 +1,20 @@
-mod server_manager;
 mod native_player;
 
-use std::sync::Arc;
-use server_manager::ServerManager;
 use native_player::NativePlayer;
 
 #[tauri::command]
 fn get_server_status() -> serde_json::Value {
-    let healthy = ServerManager::is_server_healthy();
-    let listening = healthy || ServerManager::is_server_listening();
     serde_json::json!({
-        "running": listening,
-        "healthy": healthy,
-        "url": if listening { "http://127.0.0.1:11470" } else { "" }
+        "running": true,
+        "healthy": true,
+        "url": ""
     })
 }
 
 #[tauri::command]
 fn shell_get_info() -> serde_json::Value {
     serde_json::json!({
-        "shellVersion": "4.4.168",
+        "shellVersion": "5.0.0",
         "gpuVideoProcessing": "true",
         "nativeAssSubtitles": "true",
         "hasMpv": true
@@ -37,18 +32,6 @@ fn shell_send_mpv(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let server_manager = Arc::new(ServerManager::new());
-    let server_manager_setup = server_manager.clone();
-    let server_manager_panic = server_manager.clone();
-
-    // Register panic hook to guarantee child process cleanup on Rust panics
-    let default_hook = std::panic::take_hook();
-    std::panic::set_hook(Box::new(move |panic_info| {
-        eprintln!("[Tauri Panic Hook] Emergency cleanup: stopping streaming server...");
-        server_manager_panic.stop();
-        default_hook(panic_info);
-    }));
-
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
@@ -58,8 +41,6 @@ pub fn run() {
         ])
         .setup(move |app| {
             use tauri::Manager;
-            // Start the streaming server if needed
-            server_manager_setup.start();
 
             #[cfg(target_os = "linux")]
             {
@@ -69,8 +50,7 @@ pub fn run() {
                         let children = gtk_win.children();
                         if let Some(top_child) = children.first() {
                             // Tao wraps the webview in a default GtkBox inside GtkWindow.
-                            // Extract the inner webview so its parent().parent() directly references GtkWindow,
-                            // satisfying Tauri's attach_resize_handler downcast::<gtk::Window>().unwrap().
+                            // Extract the inner webview so its parent().parent() directly references GtkWindow.
                             let (real_wv, old_container) = if let Ok(container) = top_child.clone().downcast::<gtk::Container>() {
                                 let sub_children = container.children();
                                 if let Some(first_sub) = sub_children.first() {
@@ -104,7 +84,6 @@ pub fn run() {
                                     real_wv.show();
                                     overlay.show();
 
-                                    // Verify hierarchy depth for Tauri's resize handler
                                     let p1 = real_wv.parent().map(|p| p.type_().name().to_string());
                                     let p2 = real_wv.parent().and_then(|p| p.parent()).map(|p| p.type_().name().to_string());
                                     println!("[Tauri Setup] Webview parent hierarchy: {:?} -> {:?}", p1, p2);
@@ -132,7 +111,6 @@ pub fn run() {
             use tauri::Manager;
             match event {
                 tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit => {
-                    server_manager.stop();
                     if let Some(player) = app_handle.try_state::<NativePlayer>() {
                         player.stop();
                     }
@@ -140,9 +118,7 @@ pub fn run() {
                 tauri::RunEvent::WindowEvent {
                     event: tauri::WindowEvent::Destroyed,
                     ..
-                } => {
-                    // Window destroyed
-                }
+                } => {}
                 _ => {}
             }
         });

@@ -7,7 +7,6 @@ const {
     default: useVisibleCatalogs
 } = require('stremio/common/useVisibleCatalogs');
 const {
-    useStreamingServer,
     useNotifications,
     withCoreSuspender,
     useProfile
@@ -28,7 +27,6 @@ const useBoardLibrary = require('./useBoardLibrary');
 const HeroBanner = require('./HeroBanner');
 const CategoryPills = require('./CategoryPills');
 const styles = require('./styles');
-const { default: StreamingServerWarning } = require('./StreamingServerWarning');
 const { useSearchParams, useNavigate } = require('react-router-dom');
 const { useCore } = require('stremio/core');
 const { MetadataBridge } = require('stremio/services');
@@ -40,7 +38,6 @@ const Board = () => {
     const core = useCore();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const streamingServer = useStreamingServer();
     const continueWatchingPreview = useContinueWatchingPreview();
     const [board, loadBoardRows] = useBoard();
     const notifications = useNotifications();
@@ -183,39 +180,6 @@ const Board = () => {
             return next;
         }, { replace: true });
     }, [setSearchParams]);
-
-    // Auto-reconnect to streaming server if previously failed
-    React.useEffect(() => {
-        if (streamingServer.settings !== null && streamingServer.settings.type === 'Err') {
-            const timer = setInterval(async () => {
-                try {
-                    const res = await fetch('http://127.0.0.1:11470/settings', { mode: 'cors' });
-                    if (res.ok) {
-                        core.transport.dispatch({
-                            action: 'StreamingServer',
-                            args: {
-                                action: 'Reload'
-                            }
-                        });
-                        clearInterval(timer);
-                    }
-                } catch (_) {}
-            }, 2500);
-            return () => clearInterval(timer);
-        }
-    }, [streamingServer.settings, core]);
-
-    const showStreamingServerWarning = React.useMemo(() => {
-        return (
-            streamingServer.settings !== null &&
-            streamingServer.settings.type === 'Err' &&
-            (isNaN(
-                profile.settings.streamingServerWarningDismissed.getTime()
-            ) ||
-                profile.settings.streamingServerWarningDismissed.getTime() <
-                    Date.now())
-        );
-    }, [profile.settings, streamingServer.settings]);
 
     // Derive new episodes shelf from library items with active notification counts
     const newEpisodesCatalog = React.useMemo(() => {
@@ -518,11 +482,6 @@ const Board = () => {
                     )}
                 </div>
             </MainNavBars>
-            {showStreamingServerWarning ? (
-                <StreamingServerWarning
-                    className={styles['board-warning-container']}
-                />
-            ) : null}
         </div>
     );
 };
