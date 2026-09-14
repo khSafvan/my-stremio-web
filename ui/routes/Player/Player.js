@@ -11,7 +11,7 @@ const { default: useRouteFocused } = require('stremio/common/useRouteFocused');
 const { useCore } = require('stremio/core');
 const { useServices, useGamepad } = require('stremio/services');
 const { useContentGamepadNavigation } = require('stremio/services/GamepadNavigation');
-const { useSettings, useProfile, useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, usePlatform, useShortcut, getKeyboardShortcutKey, getKeyboardShortcutKeys, useDiscord, EMPTY_DISCORD_TIMESTAMPS, getPlaybackDiscordActivity } = require('stremio/common');
+const { useSettings, useProfile, useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, usePlatform, useShortcut, getKeyboardShortcutKey, getKeyboardShortcutKeys, useDiscord, EMPTY_DISCORD_TIMESTAMPS, getPlaybackDiscordActivity, getMediaCapabilities, useLiveRef } = require('stremio/common');
 const { default: toPath } = require('stremio-router/toPath');
 const { useGoBack } = require('stremio-router');
 const { HorizontalNavBar, Transition, ContextMenu } = require('stremio/components');
@@ -80,6 +80,22 @@ const Player = () => {
     const discordTimestamps = React.useRef(EMPTY_DISCORD_TIMESTAMPS);
 
     const [seeking, setSeeking] = React.useState(false);
+    const [fallbackTranscoding, setFallbackTranscoding] = React.useState(false);
+    const fallbackTimeRef = React.useRef(null);
+    const lastPlaybackTimeRef = React.useRef(0);
+    const mediaCaps = React.useMemo(() => getMediaCapabilities(), []);
+
+    React.useEffect(() => {
+        if (video.state.time !== null && video.state.time > 0) {
+            lastPlaybackTimeRef.current = video.state.time;
+        }
+    }, [video.state.time]);
+
+    React.useEffect(() => {
+        setFallbackTranscoding(false);
+        fallbackTimeRef.current = null;
+        lastPlaybackTimeRef.current = 0;
+    }, [player.selected?.streamRequest?.path?.id, player.stream?.content?.url, player.stream?.content?.infoHash]);
 
     const [casting, setCasting] = React.useState(() => {
         return services.chromecast.active && services.chromecast.transport.getCastState() === cast.framework.CastState.CONNECTED;
@@ -238,7 +254,22 @@ const Player = () => {
     }, [player.nextVideo, profile.settings.bingeWatching, handleNextVideoNavigation, ended, nextVideo, goBack]);
 
     const onError = React.useCallback((error) => {
-        console.error('Player', error);
+        console.error('Player error:', error);
+
+        // Automatic fallback to smart server transcoding if direct playback fails (web mode only)
+        if (!platform.shell.active && !forceTranscoding && !fallbackTranscoding && streamingServer.baseUrl) {
+            console.warn('Playback error on direct stream, initiating automatic stream converter fallback...');
+            fallbackTimeRef.current = lastPlaybackTimeRef.current || video.state.time || (player.libraryItem !== null && player.libraryItem.state ? player.libraryItem.state.timeOffset : 0);
+            setFallbackTranscoding(true);
+            toast.show({
+                type: 'info',
+                title: t('PLAYER_CONVERTING_TITLE', { defaultValue: 'Optimizing Stream' }),
+                message: t('PLAYER_CONVERTING_MSG', { defaultValue: 'Converting video format for smooth playback...' }),
+                timeout: 4000
+            });
+            return;
+        }
+
         if (error.critical) {
             setError(error);
         } else {
@@ -249,7 +280,7 @@ const Player = () => {
                 timeout: 3000
             });
         }
-    }, []);
+    }, [forceTranscoding, fallbackTranscoding, streamingServer.baseUrl, video.state.time, player.libraryItem, t, toast]);
 
     const onPlayRequested = React.useCallback(() => {
         playingOnExternalDevice.current = false;
@@ -507,26 +538,35 @@ const Player = () => {
         video.unload();
 
         if (player.selected && player.stream?.type === 'Ready' && streamingServer.settings?.type !== 'Loading') {
+            const isNativeShell = platform.shell.active;
+            const shouldTranscode = isNativeShell ? false : (forceTranscoding || casting || fallbackTranscoding);
+            const startTime = fallbackTimeRef.current !== null ?
+                fallbackTimeRef.current :
+                (player.libraryItem !== null &&
+                player.selected.streamRequest !== null &&
+                player.selected.streamRequest.path !== null &&
+                player.libraryItem.state.video_id === player.selected.streamRequest.path.id ?
+                player.libraryItem.state.timeOffset
+                :
+                0);
+
             video.load({
                 stream: {
                     ...player.stream.content,
                     subtitles: streamSubtitles
                 },
                 autoplay: true,
-                time: player.libraryItem !== null &&
-                    player.selected.streamRequest !== null &&
-                    player.selected.streamRequest.path !== null &&
-                    player.libraryItem.state.video_id === player.selected.streamRequest.path.id ?
-                    player.libraryItem.state.timeOffset
-                    :
-                    0,
-                forceTranscoding: forceTranscoding || casting,
-                maxAudioChannels: settings.surroundSound ? 32 : 2,
+                time: startTime,
+                forceTranscoding: shouldTranscode,
+                formats: mediaCaps.formats,
+                videoCodecs: mediaCaps.videoCodecs,
+                audioCodecs: mediaCaps.audioCodecs,
+                maxAudioChannels: settings.surroundSound ? Math.max(mediaCaps.maxAudioChannels, 6) : 2,
                 hardwareDecoding: settings.hardwareDecoding,
                 assSubtitlesStyling: settings.assSubtitlesStyling,
                 gpuVideoProcessing: settings.gpuVideoProcessing && platform.shell.capabilities.gpuVideoProcessing,
                 videoMode: settings.videoMode,
-                platform: platform.name,
+                platform: isNativeShell ? 'windows' : platform.name,
                 streamingServerURL: streamingServer.baseUrl ?
                     casting ?
                         streamingServer.baseUrl
@@ -537,10 +577,11 @@ const Player = () => {
                 seriesInfo: player.seriesInfo,
             }, {
                 chromecastTransport: services.chromecast.active ? services.chromecast.transport : null,
-                shellTransport: platform.shell.active ? platform.shell : null,
+                shellTransport: isNativeShell ? platform.shell : null,
+                mpvSeparateWindow: true,
             });
         }
-    }, [streamingServer.baseUrl, player.selected, player.stream, streamSubtitles, forceTranscoding, casting, cancelKeyboardSeek]);
+    }, [streamingServer.baseUrl, player.selected, player.stream, streamSubtitles, forceTranscoding, casting, fallbackTranscoding, cancelKeyboardSeek, mediaCaps, settings.surroundSound, settings.hardwareDecoding, settings.assSubtitlesStyling, settings.gpuVideoProcessing, settings.videoMode, platform.name, platform.shell]);
 
     React.useEffect(() => {
         !seeking && timeChanged(video.state.time, video.state.duration, video.state.manifest?.name);
@@ -936,7 +977,7 @@ const Player = () => {
             video.events.off('error', onError);
             video.events.off('ended', onEnded);
         };
-    }, [onEnded]);
+    }, [onError, onEnded]);
 
     React.useLayoutEffect(() => {
         return () => {

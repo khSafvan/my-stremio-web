@@ -11,5 +11,6 @@
     "transcodeConcurrency": 2,
     "transcodeTrackConcurrency": 1,
     "transcodeMaxWidth": 1920,
+    "transcodeHardwareAccel": true,
     "proxyStreamsEnabled": false
 }

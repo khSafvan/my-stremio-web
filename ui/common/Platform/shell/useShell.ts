@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
 import EventEmitter from 'eventemitter3';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+
+const isTauri = typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
+if (isTauri && typeof window !== 'undefined') {
+    // Notify @stremio/stremio-video that native shell is present so transcoding is bypassed
+    (window as any).qt = (window as any).qt || { webChannelTransport: true };
+}
 
 const IPC = globalThis?.chrome?.webview;
 const LEGACY_IPC = globalThis?.qt?.webChannelTransport;
-if (LEGACY_IPC) LEGACY_IPC.onmessage = () => { /* empty */ };
+if (LEGACY_IPC && typeof LEGACY_IPC === 'object' && 'onmessage' in LEGACY_IPC) {
+    LEGACY_IPC.onmessage = () => { /* empty */ };
+}
 
 const events = new EventEmitter();
 
@@ -36,20 +46,31 @@ type ShellMessage = {
 
 const useShell = (): Shell => {
     const [state, setState] = useState<ShellState>({
-        initialized: false,
-        version: null,
+        initialized: isTauri,
+        version: isTauri ? '4.4.168' : null,
         windowClosed: false,
         windowHidden: false,
     });
     const [capabilities, setCapabilities] = useState<ShellCapabilities>({
-        gpuVideoProcessing: false,
-        nativeAssSubtitles: false,
+        gpuVideoProcessing: isTauri,
+        nativeAssSubtitles: isTauri,
     });
 
     const on = (name: string, listener: (arg: any) => void) => events.on(name, listener);
     const off = (name: string, listener: (arg: any) => void) => events.off(name, listener);
 
     const send = (method: string, ...args: (string | number | object)[]) => {
+        if (isTauri) {
+            const argPayload = args.length > 0 ? (args.length === 1 ? args[0] : args) : null;
+            invoke('shell_send_mpv', {
+                method,
+                args: argPayload,
+            }).catch((err) => {
+                console.error('[Tauri Shell] shell_send_mpv error:', err);
+            });
+            return;
+        }
+
         try {
             IPC?.postMessage(JSON.stringify({
                 id: 0,
@@ -86,6 +107,28 @@ const useShell = (): Shell => {
     }, []);
 
     useEffect(() => {
+        if (isTauri) {
+            let unlistenProp: (() => void) | undefined;
+            let unlistenReady: (() => void) | undefined;
+
+            listen('mpv-prop-change', (event: { payload: { name: string; data: any } }) => {
+                events.emit('mpv-prop-change', event.payload);
+            }).then((unlisten) => {
+                unlistenProp = unlisten;
+            });
+
+            listen('mpv-event-video-ready', () => {
+                events.emit('mpv-event-video-ready');
+            }).then((unlisten) => {
+                unlistenReady = unlisten;
+            });
+
+            return () => {
+                unlistenProp?.();
+                unlistenReady?.();
+            };
+        }
+
         const onMessage = (message: ShellMessage) => {
             try {
                 const event = JSON.parse(message.data) as ShellEvent;
@@ -127,7 +170,7 @@ const useShell = (): Shell => {
     }, []);
 
     return {
-        active: !!IPC,
+        active: isTauri || !!IPC,
         send,
         on,
         off,
