@@ -58,23 +58,12 @@
         animation: haloBreathing 2.4s ease-in-out infinite;
     }
 
-    .splash-ticket-group {
-        transform-origin: 60px 60px;
-        animation: ticketHover 2.6s ease-in-out infinite;
+    .splash-symbol-group {
+        animation: symbolHover 2.6s ease-in-out infinite;
     }
 
-    .splash-play-glyph {
-        transform-origin: 60px 60px;
-        animation: playGlow 1.8s ease-in-out infinite;
-    }
-
-    .splash-sprocket-dot {
-        animation: sprocketGlow 1.4s ease-in-out infinite alternate;
-    }
-
-    .splash-shimmer-beam {
-        opacity: 0;
-        animation: splashShimmerSweep 3s ease-in-out 0.6s infinite;
+    .splash-symbol-path {
+        transition: transform 0.3s ease;
     }
 
     // Wordmark
@@ -174,50 +163,12 @@
     }
 }
 
-@keyframes ticketHover {
+@keyframes symbolHover {
     0%, 100% {
-        transform: translateY(0);
+        transform: translate(26.7px, 26px) scale(0.13);
     }
     50% {
-        transform: translateY(-3px);
-    }
-}
-
-@keyframes playGlow {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.9;
-    }
-    50% {
-        transform: scale(1.12);
-        opacity: 1;
-    }
-}
-
-@keyframes sprocketGlow {
-    0% {
-        opacity: 0.95;
-    }
-    100% {
-        opacity: 0.5;
-    }
-}
-
-@keyframes splashShimmerSweep {
-    0% {
-        opacity: 0;
-        transform: translateX(-40px);
-    }
-    25% {
-        opacity: 0.45;
-    }
-    50% {
-        opacity: 0;
-        transform: translateX(40px);
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(40px);
+        transform: translate(26.7px, 23.5px) scale(0.134);
     }
 }
 

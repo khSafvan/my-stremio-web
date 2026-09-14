@@ -186,7 +186,7 @@ To deliver a truly cinema-grade, ultra-snappy experience with zero friction and 
 ```
 
 ### 3.1 Top Application Header Bar
-- **Brand Lockup**: Iconic film/ticket emblem + clean sans-serif logotype (`Plus Jakarta Sans`, 700 wt).
+- **Brand Lockup**: Iconic Springroll symbol emblem + clean sans-serif logotype (`Plus Jakarta Sans`, 700 wt).
 - **Scope Dropdown**: Contextual quick-filter directly attached to brand: `All Content ⌵`, `Movies ⌵`, `Series ⌵`, `Anime ⌵`, `YouTube ⌵`.
 - **Global Search Input**:
   - Wide pill input field (`4px` radius, background `#17171E`, border `1px solid #2C2C3A`).
