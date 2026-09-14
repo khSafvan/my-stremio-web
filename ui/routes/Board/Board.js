@@ -118,6 +118,35 @@ const Board = () => {
         };
     }, [bridgeFeed]);
 
+    const allGridItems = React.useMemo(() => {
+        const items = [];
+        const seen = new Set();
+
+        if (bridgeCatalogRow?.content?.content) {
+            for (const item of bridgeCatalogRow.content.content) {
+                const key = item.id || item._id;
+                if (key && !seen.has(key)) {
+                    seen.add(key);
+                    items.push(item);
+                }
+            }
+        }
+
+        for (const { catalog } of filteredCatalogRows) {
+            if (catalog?.content?.type === 'Ready' && Array.isArray(catalog.content.content)) {
+                for (const item of catalog.content.content) {
+                    const key = item.id || item._id;
+                    if (key && !seen.has(key)) {
+                        seen.add(key);
+                        items.push(item);
+                    }
+                }
+            }
+        }
+
+        return items;
+    }, [bridgeCatalogRow, filteredCatalogRows]);
+
     React.useEffect(() => {
         if (categoryParam && categoryParam !== selectedCategory) {
             setSelectedCategory(categoryParam);
@@ -133,12 +162,27 @@ const Board = () => {
         }
     }, [setSearchParams]);
 
-    const onViewModeChange = React.useCallback((mode) => {
-        if (mode === 'grid') {
-            const typePart = selectedCategory === 'all' ? '' : `/${selectedCategory}`;
-            navigate(`/discover${typePart}`);
+    const viewParam = searchParams.get('view') || 'shelves';
+    const [viewMode, setViewMode] = React.useState(viewParam);
+
+    React.useEffect(() => {
+        if (viewParam && viewParam !== viewMode) {
+            setViewMode(viewParam);
         }
-    }, [selectedCategory, navigate]);
+    }, [viewParam]);
+
+    const onViewModeChange = React.useCallback((mode) => {
+        setViewMode(mode);
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (mode === 'grid') {
+                next.set('view', 'grid');
+            } else {
+                next.delete('view');
+            }
+            return next;
+        }, { replace: true });
+    }, [setSearchParams]);
 
     // Auto-reconnect to streaming server if previously failed
     React.useEffect(() => {
@@ -263,188 +307,215 @@ const Board = () => {
                     <CategoryPills
                         selected={selectedCategory}
                         onSelect={onSelectCategory}
-                        viewMode={'shelves'}
+                        viewMode={viewMode}
                         onViewModeChange={onViewModeChange}
                     />
 
-                    {/* 3. Continue Watching Shelf (16:9 Landscape) */}
-                    {continueWatchingPreview.items.length > 0 ? (
-                        <MetaRow
-                            className={classnames(
-                                styles['board-row'],
-                                styles['board-row-landscape'],
-                                'animation-fade-in'
+                    {viewMode === 'grid' ? (
+                        /* Deep Catalog Grid Mode */
+                        <div className={styles['board-grid-section']}>
+                            {allGridItems.length > 0 ? (
+                                <div className={styles['board-grid-container']}>
+                                    {allGridItems.map((item, idx) => (
+                                        <div key={item.id || item._id || idx} className={styles['grid-meta-item']}>
+                                            <MetaItem {...item} />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles['category-empty-state']}>
+                                    <div className={styles['empty-title']}>
+                                        {t.stringWithPrefix(selectedCategory, 'TYPE_')}
+                                    </div>
+                                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                                        Loading catalog items...
+                                    </div>
+                                </div>
                             )}
-                            title={t.string('BOARD_CONTINUE_WATCHING')}
-                            catalog={continueWatchingPreview}
-                            itemComponent={ContinueWatchingItem}
-                            notifications={notifications}
-                            posterShape={'landscape'}
-                        />
+                        </div>
                     ) : (
-                        <div
-                            className={classnames(
-                                styles['board-row'],
-                                styles['continue-watching-empty-section'],
-                                'animation-fade-in'
-                            )}
-                        >
-                            <div className={styles['section-header']}>
-                                <div className={styles['section-title']}>
-                                    {t.string('BOARD_CONTINUE_WATCHING')}
-                                </div>
-                            </div>
-                            <div
-                                className={
-                                    styles['continue-watching-empty-card']
-                                }
-                            >
-                                <Icon
-                                    className={styles['empty-icon']}
-                                    name={'play'}
+                        /* Curated Horizontal Shelves Mode */
+                        <React.Fragment>
+                            {/* 3. Continue Watching Shelf (16:9 Landscape) */}
+                            {continueWatchingPreview.items.length > 0 ? (
+                                <MetaRow
+                                    className={classnames(
+                                        styles['board-row'],
+                                        styles['board-row-landscape'],
+                                        'animation-fade-in'
+                                    )}
+                                    title={t.string('BOARD_CONTINUE_WATCHING')}
+                                    catalog={continueWatchingPreview}
+                                    itemComponent={ContinueWatchingItem}
+                                    notifications={notifications}
+                                    posterShape={'landscape'}
                                 />
-                                <div className={styles['empty-text']}>
-                                    <span className={styles['empty-headline']}>
-                                        {t.string(
-                                            'BOARD_CONTINUE_WATCHING_EMPTY'
-                                        )}
-                                    </span>
-                                    <span className={styles['empty-subtext']}>
-                                        {t.stringWithPrefix(
-                                            'ContinueWatching',
-                                            'Hint',
-                                            'Resume series and episodes with 16:9 thumbnails right from your homescreen.'
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 4. Your Watchlist / Library Shelf */}
-                    {libraryCatalog && libraryCatalog.items.length > 0 ? (
-                        <MetaRow
-                            className={classnames(
-                                styles['board-row'],
-                                styles['board-row-poster'],
-                                'animation-fade-in'
-                            )}
-                            title={t.stringWithPrefix(
-                                'Library',
-                                '',
-                                'Your Watchlist'
-                            )}
-                            catalog={libraryCatalog}
-                            itemComponent={LibItem}
-                            notifications={notifications}
-                        />
-                    ) : null}
-
-                    {/* 5. New Episodes Shelf */}
-                    {newEpisodesCatalog &&
-                    newEpisodesCatalog.items.length > 0 ? (
-                        <MetaRow
-                            className={classnames(
-                                styles['board-row'],
-                                styles['board-row-poster'],
-                                'animation-fade-in'
-                            )}
-                            title={t.stringWithPrefix(
-                                'NewEpisodes',
-                                '',
-                                'New Episodes'
-                            )}
-                            catalog={newEpisodesCatalog}
-                            itemComponent={LibItem}
-                            notifications={notifications}
-                        />
-                    ) : null}
-
-                    {/* 6. Decoupled Catalog Feed (TMDb / SIMKL Bridge) */}
-                    {bridgeCatalogRow ? (
-                        <MetaRow
-                            key={bridgeCatalogRow.id}
-                            className={classnames(
-                                styles['board-row'],
-                                styles['board-row-poster'],
-                                'animation-fade-in'
-                            )}
-                            catalog={bridgeCatalogRow}
-                            itemComponent={MetaItem}
-                        />
-                    ) : null}
-
-                    {/* 7. Dynamic Addon Catalogs */}
-                    {filteredCatalogRows.map(({ catalog, index }) => {
-                        switch (catalog.content?.type) {
-                            case 'Ready': {
-                                return (
-                                    <MetaRow
-                                        key={index}
-                                        className={classnames(
-                                            styles['board-row'],
-                                            styles[
-                                                `board-row-${catalog.content.content[0].posterShape}`
-                                            ],
-                                            'animation-fade-in'
-                                        )}
-                                        catalog={catalog}
-                                        itemComponent={MetaItem}
-                                    />
-                                );
-                            }
-                            case 'Err': {
-                                if (
-                                    catalog.content.content !== 'EmptyContent'
-                                ) {
-                                    return (
-                                        <MetaRow
-                                            key={index}
-                                            className={classnames(
-                                                styles['board-row'],
-                                                'animation-fade-in'
-                                            )}
-                                            catalog={catalog}
-                                            message={catalog.content.content}
+                            ) : (
+                                <div
+                                    className={classnames(
+                                        styles['board-row'],
+                                        styles['continue-watching-empty-section'],
+                                        'animation-fade-in'
+                                    )}
+                                >
+                                    <div className={styles['section-header']}>
+                                        <div className={styles['section-title']}>
+                                            {t.string('BOARD_CONTINUE_WATCHING')}
+                                        </div>
+                                    </div>
+                                    <div
+                                        className={
+                                            styles['continue-watching-empty-card']
+                                        }
+                                    >
+                                        <Icon
+                                            className={styles['empty-icon']}
+                                            name={'play'}
                                         />
-                                    );
-                                }
-                                return null;
-                            }
-                            default: {
-                                return (
-                                    <MetaRow.Placeholder
-                                        key={index}
-                                        className={classnames(
-                                            styles['board-row'],
-                                            styles['board-row-poster'],
-                                            'animation-fade-in'
-                                        )}
-                                        catalog={catalog}
-                                        title={t.catalogTitle(catalog)}
-                                    />
-                                );
-                            }
-                        }
-                    })}
+                                        <div className={styles['empty-text']}>
+                                            <span className={styles['empty-headline']}>
+                                                {t.string(
+                                                    'BOARD_CONTINUE_WATCHING_EMPTY'
+                                                )}
+                                            </span>
+                                            <span className={styles['empty-subtext']}>
+                                                {t.stringWithPrefix(
+                                                    'ContinueWatching',
+                                                    'Hint',
+                                                    'Resume series and episodes with 16:9 thumbnails right from your homescreen.'
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
-                    {/* Fallback exploration card when filtered category has no immediate rows */}
-                    {selectedCategory !== 'all' &&
-                    filteredCatalogRows.length === 0 &&
-                    !bridgeCatalogRow ? (
-                        <div className={styles['category-empty-state']}>
-                            <div className={styles['empty-title']}>
-                                {t.stringWithPrefix(selectedCategory, 'TYPE_')}
-                            </div>
-                            <Button
-                                className={styles['empty-action-btn']}
-                                href={discoverUrl}
-                            >
-                                <Icon name={'discover'} />
-                                <span>{t.string('NAV_DISCOVER')}</span>
-                            </Button>
-                        </div>
-                    ) : null}
+                            {/* 4. Your Watchlist / Library Shelf */}
+                            {libraryCatalog && libraryCatalog.items.length > 0 ? (
+                                <MetaRow
+                                    className={classnames(
+                                        styles['board-row'],
+                                        styles['board-row-poster'],
+                                        'animation-fade-in'
+                                    )}
+                                    title={t.stringWithPrefix(
+                                        'Library',
+                                        '',
+                                        'Your Watchlist'
+                                    )}
+                                    catalog={libraryCatalog}
+                                    itemComponent={LibItem}
+                                    notifications={notifications}
+                                />
+                            ) : null}
+
+                            {/* 5. New Episodes Shelf */}
+                            {newEpisodesCatalog &&
+                            newEpisodesCatalog.items.length > 0 ? (
+                                <MetaRow
+                                    className={classnames(
+                                        styles['board-row'],
+                                        styles['board-row-poster'],
+                                        'animation-fade-in'
+                                    )}
+                                    title={t.stringWithPrefix(
+                                        'NewEpisodes',
+                                        '',
+                                        'New Episodes'
+                                    )}
+                                    catalog={newEpisodesCatalog}
+                                    itemComponent={LibItem}
+                                    notifications={notifications}
+                                />
+                            ) : null}
+
+                            {/* 6. Decoupled Catalog Feed (TMDb / SIMKL Bridge) */}
+                            {bridgeCatalogRow ? (
+                                <MetaRow
+                                    key={bridgeCatalogRow.id}
+                                    className={classnames(
+                                        styles['board-row'],
+                                        styles['board-row-poster'],
+                                        'animation-fade-in'
+                                    )}
+                                    catalog={bridgeCatalogRow}
+                                    itemComponent={MetaItem}
+                                />
+                            ) : null}
+
+                            {/* 7. Dynamic Addon Catalogs */}
+                            {filteredCatalogRows.map(({ catalog, index }) => {
+                                switch (catalog.content?.type) {
+                                    case 'Ready': {
+                                        return (
+                                            <MetaRow
+                                                key={index}
+                                                className={classnames(
+                                                    styles['board-row'],
+                                                    styles[
+                                                        `board-row-${catalog.content.content[0].posterShape}`
+                                                    ],
+                                                    'animation-fade-in'
+                                                )}
+                                                catalog={catalog}
+                                                itemComponent={MetaItem}
+                                            />
+                                        );
+                                    }
+                                    case 'Err': {
+                                        if (
+                                            catalog.content.content !== 'EmptyContent'
+                                        ) {
+                                            return (
+                                                <MetaRow
+                                                    key={index}
+                                                    className={classnames(
+                                                        styles['board-row'],
+                                                        'animation-fade-in'
+                                                    )}
+                                                    catalog={catalog}
+                                                    message={catalog.content.content}
+                                                />
+                                            );
+                                        }
+                                        return null;
+                                    }
+                                    default: {
+                                        return (
+                                            <MetaRow.Placeholder
+                                                key={index}
+                                                className={classnames(
+                                                    styles['board-row'],
+                                                    styles['board-row-poster'],
+                                                    'animation-fade-in'
+                                                )}
+                                                catalog={catalog}
+                                                title={t.catalogTitle(catalog)}
+                                            />
+                                        );
+                                    }
+                                }
+                            })}
+
+                            {/* Fallback exploration card when filtered category has no immediate rows */}
+                            {selectedCategory !== 'all' &&
+                            filteredCatalogRows.length === 0 &&
+                            !bridgeCatalogRow ? (
+                                <div className={styles['category-empty-state']}>
+                                    <div className={styles['empty-title']}>
+                                        {t.stringWithPrefix(selectedCategory, 'TYPE_')}
+                                    </div>
+                                    <Button
+                                        className={styles['empty-action-btn']}
+                                        href={discoverUrl}
+                                    >
+                                        <Icon name={'discover'} />
+                                        <span>{t.string('NAV_DISCOVER')}</span>
+                                    </Button>
+                                </div>
+                            ) : null}
+                        </React.Fragment>
+                    )}
                 </div>
             </MainNavBars>
             {showStreamingServerWarning ? (

@@ -37,6 +37,31 @@
                 contain-intrinsic-size: 240px;
             }
 
+            .board-grid-section {
+                padding: 0 0.5rem;
+                margin-top: 1rem;
+                margin-bottom: 3rem;
+
+                .board-grid-container {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+                    gap: 1.25rem 0.85rem;
+                    justify-content: start;
+                    align-items: start;
+
+                    .grid-meta-item {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        transition: transform 0.15s ease;
+
+                        &:hover {
+                            transform: translateY(-4px);
+                        }
+                    }
+                }
+            }
+
             .continue-watching-empty-section {
                 margin-top: 1rem;
                 margin-bottom: 2rem;
