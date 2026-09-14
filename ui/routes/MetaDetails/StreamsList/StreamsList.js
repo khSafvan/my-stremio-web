@@ -8,8 +8,10 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const { Button, Image, MultiselectMenu } = require('stremio/components');
+const { Button, Image, MultiselectMenu, AIOStreamsModal } = require('stremio/components');
 const { useCore } = require('stremio/core');
+const { loadAIOConfig, fetchAddonStreams } = require('stremio/services/AIOStreams');
+const { MetadataBridge } = require('stremio/services');
 const Stream = require('./Stream');
 const styles = require('./styles');
 const { usePlatform, useProfile } = require('stremio/common');
@@ -17,7 +19,7 @@ const { default: SeasonEpisodePicker } = require('../EpisodePicker');
 
 const ALL_ADDONS_KEY = 'ALL';
 
-const StreamsList = ({ className, video, type, onEpisodeSearch, ...props }) => {
+const StreamsList = ({ className, video, type, metaId, onEpisodeSearch, ...props }) => {
     const { t } = useTranslation();
     const core = useCore();
     const platform = usePlatform();
@@ -26,6 +28,75 @@ const StreamsList = ({ className, video, type, onEpisodeSearch, ...props }) => {
     const goBack = useGoBack();
     const streamsContainerRef = React.useRef(null);
     const [selectedAddon, setSelectedAddon] = React.useState(ALL_ADDONS_KEY);
+    const [isAIOModalOpen, setIsAIOModalOpen] = React.useState(false);
+    const [aioStreams, setAioStreams] = React.useState(null);
+    const [loadingAio, setLoadingAio] = React.useState(false);
+
+    React.useEffect(() => {
+        let cancelled = false;
+        async function loadAio() {
+            const rawId = metaId || (video?.id ? video.id.split(':')[0] : null);
+            if (!rawId) return;
+
+            setLoadingAio(true);
+            try {
+                let imdbId = rawId;
+                if (rawId.startsWith('tmdb:')) {
+                    const mediaType = type === 'series' ? 'tv' : 'movie';
+                    const ext = await MetadataBridge.fetchTmdbExternalIds(mediaType, rawId.replace('tmdb:', ''));
+                    if (ext?.imdb_id) {
+                        imdbId = ext.imdb_id;
+                    }
+                }
+
+                const aioConfig = loadAIOConfig();
+                const manifestUrl = aioConfig?.manifestUrl || 'https://aiostreams.viren070.me';
+
+                const mediaReq = {
+                    type: type === 'series' ? 'series' : 'movie',
+                    imdbId,
+                    season: typeof video?.season === 'number' ? video.season : undefined,
+                    episode: typeof video?.episode === 'number' ? video.episode : undefined,
+                };
+
+                const fetched = await fetchAddonStreams(manifestUrl, mediaReq);
+                if (!cancelled) {
+                    const mapped = fetched.map((stream) => {
+                        return {
+                            name: stream.name || 'AIOStreams',
+                            description: stream.description || stream.title || 'Stream',
+                            url: stream.url,
+                            addonName: stream.name || 'AIOStreams',
+                            thumbnail: stream.thumbnail,
+                            behaviorHints: stream.behaviorHints,
+                            onClick: async () => {
+                                try {
+                                    const encoded = await core.transport.encodeStream({
+                                        name: stream.name || 'AIOStreams',
+                                        description: stream.description || stream.title || '',
+                                        url: stream.url,
+                                        behaviorHints: stream.behaviorHints
+                                    });
+                                    navigate(`/player/${encodeURIComponent(encoded)}`);
+                                } catch (e) {
+                                    console.error('Failed to encode AIO stream:', e);
+                                }
+                            }
+                        };
+                    });
+                    setAioStreams(mapped);
+                }
+            } catch (err) {
+                console.warn('AIOStreams fetch error in StreamsList:', err);
+            } finally {
+                if (!cancelled) setLoadingAio(false);
+            }
+        }
+        loadAio();
+        return () => {
+            cancelled = true;
+        };
+    }, [metaId, video, type, core.transport, navigate]);
     const onAddonSelected = React.useCallback((value) => {
         streamsContainerRef.current.scrollTo({ top: 0, left: 0, behavior: platform.name === 'ios' ? 'smooth' : 'instant' });
         setSelectedAddon(value);
@@ -129,87 +200,56 @@ const StreamsList = ({ className, video, type, onEpisodeSearch, ...props }) => {
                 }
             </div>
             {
-                props.streams.length === 0 ?
+                loadingAio && (!aioStreams || aioStreams.length === 0) && props.streams.length === 0 ? (
+                    <div className={styles['streams-container']}>
+                        <Stream.Placeholder />
+                        <Stream.Placeholder />
+                    </div>
+                ) : (aioStreams && aioStreams.length > 0) || filteredStreams.length > 0 ? (
+                    <div className={styles['streams-container']} ref={streamsContainerRef}>
+                        {((aioStreams && aioStreams.length > 0) ? aioStreams : filteredStreams).map((stream, index) => (
+                            <Stream
+                                key={index}
+                                videoId={video?.id}
+                                videoReleased={video?.released}
+                                addonName={stream.addonName || 'AIOStreams'}
+                                name={stream.name}
+                                description={stream.description}
+                                thumbnail={stream.thumbnail}
+                                progress={stream.progress}
+                                deepLinks={stream.deepLinks}
+                                onClick={stream.onClick}
+                            />
+                        ))}
+                        <Button className={styles['install-button-container']} title={'Configure AIOStreams'} onClick={() => setIsAIOModalOpen(true)}>
+                            <Icon className={styles['icon']} name={'settings'} />
+                            <div className={styles['label']}>{'Configure AIOStreams'}</div>
+                        </Button>
+                    </div>
+                ) : (
                     <div className={styles['message-container']}>
                         {
                             type === 'series' ?
                                 <SeasonEpisodePicker className={styles['search']} onSubmit={handleEpisodePicker} />
                                 : null
                         }
+                        {
+                            video?.upcoming ?
+                                <div className={styles['label']}>{t('UPCOMING')}...</div>
+                                : null
+                        }
                         <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
-                        <div className={styles['label']}>{t('ERR_NO_ADDONS_FOR_STREAMS')}</div>
+                        <div className={styles['label']}>{t('NO_STREAM')}</div>
+                        <Button className={styles['install-button-container']} title={'Configure AIOStreams'} onClick={() => setIsAIOModalOpen(true)}>
+                            <Icon className={styles['icon']} name={'settings'} />
+                            <div className={styles['label']}>{'Configure AIOStreams'}</div>
+                        </Button>
                     </div>
-                    :
-                    props.streams.every((streams) => streams.content.type === 'Err') ?
-                        <div className={styles['message-container']}>
-                            {
-                                type === 'series' ?
-                                    <SeasonEpisodePicker className={styles['search']} onSubmit={handleEpisodePicker} />
-                                    : null
-                            }
-                            {
-                                video?.upcoming ?
-                                    <div className={styles['label']}>{t('UPCOMING')}...</div>
-                                    : null
-                            }
-                            <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
-                            <div className={styles['label']}>{t('NO_STREAM')}</div>
-                            {
-                                showInstallAddonsButton ?
-                                    <Button className={styles['install-button-container']} title={t('ADDON_CATALOGUE_MORE')} href={'#/addons'}>
-                                        <Icon className={styles['icon']} name={'addons'} />
-                                        <div className={styles['label']}>{t('ADDON_CATALOGUE_MORE')}</div>
-                                    </Button>
-                                    :
-                                    null
-                            }
-                        </div>
-                        :
-                        filteredStreams.length === 0 ?
-                            <div className={styles['streams-container']}>
-                                <Stream.Placeholder />
-                                <Stream.Placeholder />
-                            </div>
-                            :
-                            <React.Fragment>
-                                <div className={styles['streams-container']} ref={streamsContainerRef}>
-                                    {filteredStreams.map((stream, index) => (
-                                        <Stream
-                                            key={index}
-                                            videoId={video?.id}
-                                            videoReleased={video?.released}
-                                            addonName={stream.addonName}
-                                            name={stream.name}
-                                            description={stream.description}
-                                            thumbnail={stream.thumbnail}
-                                            progress={stream.progress}
-                                            deepLinks={stream.deepLinks}
-                                            onClick={stream.onClick}
-                                        />
-                                    ))}
-                                    {
-                                        showInstallAddonsButton ?
-                                            <Button className={styles['install-button-container']} title={t('ADDON_CATALOGUE_MORE')} href={'#/addons'}>
-                                                <Icon className={styles['icon']} name={'addons'} />
-                                                <div className={styles['label']}>{t('ADDON_CATALOGUE_MORE')}</div>
-                                            </Button>
-                                            :
-                                            null
-                                    }
-                                </div>
-                                {
-                                    countLoadingAddons > 0 ?
-                                        <div className={styles['addons-loading-container']}>
-                                            <div className={styles['addons-loading']}>
-                                                {countLoadingAddons} {t('MOBILE_ADDONS_LOADING')}
-                                            </div>
-                                            <span className={styles['addons-loading-bar']}></span>
-                                        </div>
-                                        :
-                                        null
-                                }
-                            </React.Fragment>
+                )
             }
+            {isAIOModalOpen && (
+                <AIOStreamsModal onCloseRequest={() => setIsAIOModalOpen(false)} />
+            )}
         </div>
     );
 };

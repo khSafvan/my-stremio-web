@@ -1,6 +1,16 @@
 // Metadata Bridge: Maps TMDb & SIMKL records into standardized Springroll Meta items
 
-import { fetchTmdbTrending, fetchTmdbPopular, fetchTmdbClearLogo, fetchTmdbExternalIds, getPosterUrl, getBackdropUrl, TmdbMediaItem } from './tmdbClient';
+import {
+    fetchTmdbTrending,
+    fetchTmdbPopular,
+    fetchTmdbTopRated,
+    fetchTmdbDetails,
+    fetchTmdbClearLogo,
+    fetchTmdbExternalIds,
+    getPosterUrl,
+    getBackdropUrl,
+    TmdbMediaItem
+} from './tmdbClient';
 import { fetchSimklAiringAnime, fetchSimklTrendingAnime, resolveCrossId, SimklAnimeItem } from './simklClient';
 
 export interface SpringrollCatalogItem {
@@ -20,6 +30,48 @@ export const getTrendingFeed = async (mediaType: 'all' | 'movie' | 'tv' = 'all')
     const rawItems = await fetchTmdbTrending(mediaType, 'day');
     return rawItems.map(item => {
         const isMovie = item.media_type === 'movie' || (mediaType === 'movie') || Boolean(item.title);
+        const name = item.title || item.name || 'Untitled';
+        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : undefined;
+        
+        return {
+            id: `tmdb:${item.id}`,
+            type: isMovie ? 'movie' : 'series',
+            name,
+            poster: getPosterUrl(item.poster_path),
+            background: getBackdropUrl(item.backdrop_path),
+            description: item.overview,
+            releaseInfo: year,
+            imdbRating: rating
+        };
+    });
+};
+
+export const getPopularFeed = async (mediaType: 'movie' | 'tv' = 'movie'): Promise<SpringrollCatalogItem[]> => {
+    const rawItems = await fetchTmdbPopular(mediaType, 1);
+    return rawItems.map(item => {
+        const isMovie = mediaType === 'movie';
+        const name = item.title || item.name || 'Untitled';
+        const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : undefined;
+        
+        return {
+            id: `tmdb:${item.id}`,
+            type: isMovie ? 'movie' : 'series',
+            name,
+            poster: getPosterUrl(item.poster_path),
+            background: getBackdropUrl(item.backdrop_path),
+            description: item.overview,
+            releaseInfo: year,
+            imdbRating: rating
+        };
+    });
+};
+
+export const getTopRatedFeed = async (mediaType: 'movie' | 'tv' = 'movie'): Promise<SpringrollCatalogItem[]> => {
+    const rawItems = await fetchTmdbTopRated(mediaType, 1);
+    return rawItems.map(item => {
+        const isMovie = mediaType === 'movie';
         const name = item.title || item.name || 'Untitled';
         const year = (item.release_date || item.first_air_date || '').slice(0, 4);
         const rating = item.vote_average ? item.vote_average.toFixed(1) : undefined;
@@ -57,14 +109,4 @@ export const getAnimeFeed = async (): Promise<SpringrollCatalogItem[]> => {
             imdbRating: anime.rating ? anime.rating.toFixed(1) : undefined
         };
     });
-};
-
-export {
-    fetchTmdbTrending,
-    fetchTmdbPopular,
-    fetchTmdbClearLogo,
-    fetchTmdbExternalIds,
-    fetchSimklAiringAnime,
-    fetchSimklTrendingAnime,
-    resolveCrossId
 };

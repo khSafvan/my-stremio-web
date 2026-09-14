@@ -3,14 +3,7 @@
 const React = require('react');
 const classnames = require('classnames');
 const useTranslate = require('stremio/common/useTranslate');
-const {
-    default: useVisibleCatalogs
-} = require('stremio/common/useVisibleCatalogs');
-const {
-    useNotifications,
-    withCoreSuspender,
-    useProfile
-} = require('stremio/common');
+const { withCoreSuspender, useProfile, useNotifications } = require('stremio/common');
 const {
     Button,
     ContinueWatchingItem,
@@ -21,7 +14,6 @@ const {
     MetaRow
 } = require('stremio/components');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const useBoard = require('./useBoard');
 const useContinueWatchingPreview = require('./useContinueWatchingPreview');
 const useBoardLibrary = require('./useBoardLibrary');
 const HeroBanner = require('./HeroBanner');
@@ -31,106 +23,120 @@ const { useSearchParams, useNavigate } = require('react-router-dom');
 const { useCore } = require('stremio/core');
 const { MetadataBridge } = require('stremio/services');
 
-const THRESHOLD = 5;
-
 const Board = () => {
     const t = useTranslate();
     const core = useCore();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const continueWatchingPreview = useContinueWatchingPreview();
-    const [board, loadBoardRows] = useBoard();
     const notifications = useNotifications();
     const profile = useProfile();
     const libraryCatalog = useBoardLibrary();
+    const scrollContainerRef = React.useRef(null);
 
     const categoryParam = searchParams.get('category') || searchParams.get('type') || 'all';
     const [selectedCategory, setSelectedCategory] = React.useState(categoryParam);
-    const [bridgeFeed, setBridgeFeed] = React.useState(null);
+    const [nativeShelves, setNativeShelves] = React.useState([]);
 
     React.useEffect(() => {
         let cancelled = false;
-        async function loadFeed() {
+        async function loadShelves() {
             try {
+                const shelves = [];
                 if (selectedCategory === 'anime') {
-                    const anime = await MetadataBridge.getAnimeFeed();
-                    if (!cancelled) {
-                        setBridgeFeed({ type: 'anime', title: 'SIMKL Trending & Airing Anime', items: anime });
+                    const [trendingAnime, airingAnime] = await Promise.all([
+                        MetadataBridge.getAnimeFeed().catch(() => []),
+                        MetadataBridge.fetchSimklAiringAnime().then(list => list.map(anime => ({
+                            id: anime.ids?.imdb || (anime.ids?.tmdb ? `tmdb:${anime.ids.tmdb}` : `simkl:${anime.ids?.simkl}`),
+                            type: 'series',
+                            name: anime.title,
+                            poster: anime.poster ? `https://simkl.in/posters/${anime.poster}_m.webp` : null,
+                            background: anime.fanart ? `https://simkl.in/fanart/${anime.fanart}_medium.webp` : null,
+                            releaseInfo: anime.year ? String(anime.year) : undefined,
+                            imdbRating: anime.rating ? anime.rating.toFixed(1) : undefined
+                        }))).catch(() => [])
+                    ]);
+                    shelves.push({ id: 'anime_trending', title: 'Trending Anime', type: 'series', items: trendingAnime });
+                    if (airingAnime.length > 0) {
+                        shelves.push({ id: 'anime_airing', title: 'Currently Airing Anime', type: 'series', items: airingAnime });
                     }
                 } else if (selectedCategory === 'movie') {
-                    const movies = await MetadataBridge.getTrendingFeed('movie');
-                    if (!cancelled) {
-                        setBridgeFeed({ type: 'movie', title: 'TMDb Trending Movies', items: movies });
-                    }
+                    const [trending, popular, topRated] = await Promise.all([
+                        MetadataBridge.getTrendingFeed('movie').catch(() => []),
+                        MetadataBridge.getPopularFeed('movie').catch(() => []),
+                        MetadataBridge.getTopRatedFeed('movie').catch(() => []),
+                    ]);
+                    shelves.push({ id: 'movies_trending', title: 'Trending Movies', type: 'movie', items: trending });
+                    shelves.push({ id: 'movies_popular', title: 'Popular Movies', type: 'movie', items: popular });
+                    shelves.push({ id: 'movies_top_rated', title: 'Top Rated Movies', type: 'movie', items: topRated });
                 } else if (selectedCategory === 'series') {
-                    const series = await MetadataBridge.getTrendingFeed('tv');
-                    if (!cancelled) {
-                        setBridgeFeed({ type: 'series', title: 'TMDb Trending Series', items: series });
-                    }
+                    const [trending, popular, topRated] = await Promise.all([
+                        MetadataBridge.getTrendingFeed('tv').catch(() => []),
+                        MetadataBridge.getPopularFeed('tv').catch(() => []),
+                        MetadataBridge.getTopRatedFeed('tv').catch(() => []),
+                    ]);
+                    shelves.push({ id: 'series_trending', title: 'Trending Series', type: 'series', items: trending });
+                    shelves.push({ id: 'series_popular', title: 'Popular Series', type: 'series', items: popular });
+                    shelves.push({ id: 'series_top_rated', title: 'Top Rated Series', type: 'series', items: topRated });
                 } else {
-                    const trending = await MetadataBridge.getTrendingFeed('all');
-                    if (!cancelled) {
-                        setBridgeFeed({ type: 'all', title: 'Trending Today', items: trending });
-                    }
+                    // All
+                    const [trendingToday, trendingMovies, trendingSeries, anime, popularMovies] = await Promise.all([
+                        MetadataBridge.getTrendingFeed('all').catch(() => []),
+                        MetadataBridge.getTrendingFeed('movie').catch(() => []),
+                        MetadataBridge.getTrendingFeed('tv').catch(() => []),
+                        MetadataBridge.getAnimeFeed().catch(() => []),
+                        MetadataBridge.getPopularFeed('movie').catch(() => []),
+                    ]);
+                    shelves.push({ id: 'all_trending', title: 'Trending Today', type: 'all', items: trendingToday });
+                    shelves.push({ id: 'movies_trending', title: 'Trending Movies', type: 'movie', items: trendingMovies });
+                    shelves.push({ id: 'series_trending', title: 'Trending TV Shows', type: 'series', items: trendingSeries });
+                    shelves.push({ id: 'anime_trending', title: 'Trending Anime', type: 'series', items: anime });
+                    shelves.push({ id: 'movies_popular', title: 'Popular Movies', type: 'movie', items: popularMovies });
+                }
+                if (!cancelled) {
+                    setNativeShelves(shelves);
                 }
             } catch (err) {
-                console.warn('Failed to load bridge feed in Board:', err);
+                console.warn('Failed to load native shelves:', err);
             }
         }
-        loadFeed();
+        loadShelves();
         return () => {
             cancelled = true;
         };
     }, [selectedCategory]);
 
-    const bridgeCatalogRow = React.useMemo(() => {
-        if (!bridgeFeed || !Array.isArray(bridgeFeed.items) || bridgeFeed.items.length === 0) {
-            return null;
-        }
-
-        const mapped = bridgeFeed.items.map((item) => ({
-            id: item.id,
-            _id: item.id,
-            name: item.name,
-            type: item.type,
-            poster: item.poster,
-            posterShape: 'poster',
-            background: item.background,
-            releaseInfo: item.releaseInfo,
-            imdbRating: item.imdbRating,
-            description: item.description,
-            deepLinks: {
-                metaDetailsVideos: `#/metadetails/${item.type}/${item.id}`
-            }
-        }));
-
-        return {
-            id: `bridge_${bridgeFeed.type}`,
-            name: bridgeFeed.title,
-            type: bridgeFeed.type,
+    const nativeCatalogRows = React.useMemo(() => {
+        return nativeShelves.map((shelf) => ({
+            id: shelf.id,
+            name: shelf.title,
+            type: shelf.type,
             content: {
                 type: 'Ready',
-                content: mapped
+                content: shelf.items.map((item) => ({
+                    id: item.id,
+                    _id: item.id,
+                    name: item.name,
+                    type: item.type,
+                    poster: item.poster,
+                    posterShape: 'poster',
+                    background: item.background,
+                    releaseInfo: item.releaseInfo,
+                    imdbRating: item.imdbRating,
+                    description: item.description,
+                    deepLinks: {
+                        metaDetailsVideos: `#/metadetails/${item.type}/${item.id}`
+                    }
+                }))
             }
-        };
-    }, [bridgeFeed]);
+        }));
+    }, [nativeShelves]);
 
     const allGridItems = React.useMemo(() => {
         const items = [];
         const seen = new Set();
-
-        if (bridgeCatalogRow?.content?.content) {
-            for (const item of bridgeCatalogRow.content.content) {
-                const key = item.id || item._id;
-                if (key && !seen.has(key)) {
-                    seen.add(key);
-                    items.push(item);
-                }
-            }
-        }
-
-        for (const { catalog } of filteredCatalogRows) {
-            if (catalog?.content?.type === 'Ready' && Array.isArray(catalog.content.content)) {
+        for (const catalog of nativeCatalogRows) {
+            if (Array.isArray(catalog.content?.content)) {
                 for (const item of catalog.content.content) {
                     const key = item.id || item._id;
                     if (key && !seen.has(key)) {
@@ -140,9 +146,8 @@ const Board = () => {
                 }
             }
         }
-
         return items;
-    }, [bridgeCatalogRow, filteredCatalogRows]);
+    }, [nativeCatalogRows]);
 
     React.useEffect(() => {
         if (categoryParam && categoryParam !== selectedCategory) {
@@ -204,44 +209,6 @@ const Board = () => {
         };
     }, [libraryCatalog?.items, notifications?.items]);
 
-    // Leading rows for visible catalogs virtualization calculation:
-    // 1 (HeroBanner) + continue watching (1) + optional new episodes + optional library + 1 (CategoryPills)
-    const boardCatalogsOffset = React.useMemo(() => {
-        let count = 3;
-        if (newEpisodesCatalog && newEpisodesCatalog.items.length > 0)
-            count += 1;
-        if (libraryCatalog && libraryCatalog.items.length > 0) count += 1;
-        return count;
-    }, [newEpisodesCatalog, libraryCatalog]);
-
-    const { catalogRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
-        catalogs: board.catalogs,
-        loadRange: loadBoardRows,
-        leadingRows: boardCatalogsOffset,
-        preloadRows: THRESHOLD
-    });
-
-    // Filter catalog rows according to selected category pill
-    const filteredCatalogRows = React.useMemo(() => {
-        if (selectedCategory === 'all') {
-            return catalogRows;
-        }
-        return catalogRows.filter(({ catalog }) => {
-            if (catalog.type === selectedCategory) {
-                return true;
-            }
-            if (
-                catalog.content?.type === 'Ready' &&
-                Array.isArray(catalog.content.content)
-            ) {
-                return catalog.content.content.some(
-                    (item) => item.type === selectedCategory
-                );
-            }
-            return false;
-        });
-    }, [catalogRows, selectedCategory]);
-
     const discoverUrl = React.useMemo(() => {
         return selectedCategory === 'all'
             ? '#/discover'
@@ -258,11 +225,10 @@ const Board = () => {
                 <div
                     ref={scrollContainerRef}
                     className={styles['board-content']}
-                    onScroll={onScroll}
                 >
                     {/* 1. Cinematic Hero Banner Carousel */}
                     <HeroBanner
-                        catalogs={catalogRows}
+                        catalogs={nativeCatalogRows.map((cat) => ({ catalog: cat }))}
                         continueWatching={continueWatchingPreview}
                         library={libraryCatalog}
                     />
@@ -393,78 +359,23 @@ const Board = () => {
                                 />
                             ) : null}
 
-                            {/* 6. Decoupled Catalog Feed (TMDb / SIMKL Bridge) */}
-                            {bridgeCatalogRow ? (
+                            {/* Native High-Performance TMDb & SIMKL Catalogs */}
+                            {nativeCatalogRows.map((catalog) => (
                                 <MetaRow
-                                    key={bridgeCatalogRow.id}
+                                    key={catalog.id}
                                     className={classnames(
                                         styles['board-row'],
                                         styles['board-row-poster'],
                                         'animation-fade-in'
                                     )}
-                                    catalog={bridgeCatalogRow}
+                                    title={catalog.name}
+                                    catalog={catalog}
                                     itemComponent={MetaItem}
                                 />
-                            ) : null}
+                            ))}
 
-                            {/* 7. Dynamic Addon Catalogs */}
-                            {filteredCatalogRows.map(({ catalog, index }) => {
-                                switch (catalog.content?.type) {
-                                    case 'Ready': {
-                                        return (
-                                            <MetaRow
-                                                key={index}
-                                                className={classnames(
-                                                    styles['board-row'],
-                                                    styles[
-                                                        `board-row-${catalog.content.content[0].posterShape}`
-                                                    ],
-                                                    'animation-fade-in'
-                                                )}
-                                                catalog={catalog}
-                                                itemComponent={MetaItem}
-                                            />
-                                        );
-                                    }
-                                    case 'Err': {
-                                        if (
-                                            catalog.content.content !== 'EmptyContent'
-                                        ) {
-                                            return (
-                                                <MetaRow
-                                                    key={index}
-                                                    className={classnames(
-                                                        styles['board-row'],
-                                                        'animation-fade-in'
-                                                    )}
-                                                    catalog={catalog}
-                                                    message={catalog.content.content}
-                                                />
-                                            );
-                                        }
-                                        return null;
-                                    }
-                                    default: {
-                                        return (
-                                            <MetaRow.Placeholder
-                                                key={index}
-                                                className={classnames(
-                                                    styles['board-row'],
-                                                    styles['board-row-poster'],
-                                                    'animation-fade-in'
-                                                )}
-                                                catalog={catalog}
-                                                title={t.catalogTitle(catalog)}
-                                            />
-                                        );
-                                    }
-                                }
-                            })}
-
-                            {/* Fallback exploration card when filtered category has no immediate rows */}
-                            {selectedCategory !== 'all' &&
-                            filteredCatalogRows.length === 0 &&
-                            !bridgeCatalogRow ? (
+                            {/* Fallback exploration card when category has no immediate rows */}
+                            {selectedCategory !== 'all' && nativeCatalogRows.length === 0 ? (
                                 <div className={styles['category-empty-state']}>
                                     <div className={styles['empty-title']}>
                                         {t.stringWithPrefix(selectedCategory, 'TYPE_')}

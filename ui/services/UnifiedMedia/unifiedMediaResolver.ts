@@ -45,14 +45,42 @@ export async function resolveMediaDetails(options: {
     const { imdbId, isAnime = false, malId, titleFallback = '' } = options;
     const tmdbKey = getTmdbApiKey();
 
-    const cleanImdb = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+    let cleanImdb = imdbId;
+    let directTmdbData: any = null;
+
+    if (imdbId.startsWith('tmdb:')) {
+        const rawTmdbId = imdbId.replace('tmdb:', '');
+        try {
+            // Try fetching as movie, fallback to tv
+            const mRes = await fetch(`${TMDB_API_BASE}/movie/${rawTmdbId}?api_key=${tmdbKey}&append_to_response=external_ids,videos,credits`);
+            if (mRes.ok) {
+                directTmdbData = await mRes.json();
+                directTmdbData._mediaType = 'movie';
+            } else {
+                const tRes = await fetch(`${TMDB_API_BASE}/tv/${rawTmdbId}?api_key=${tmdbKey}&append_to_response=external_ids,videos,credits`);
+                if (tRes.ok) {
+                    directTmdbData = await tRes.json();
+                    directTmdbData._mediaType = 'tv';
+                }
+            }
+            if (directTmdbData?.external_ids?.imdb_id) {
+                cleanImdb = directTmdbData.external_ids.imdb_id;
+            }
+        } catch (e) {
+            console.warn('Failed to fetch direct TMDb item:', e);
+        }
+    } else if (!cleanImdb.startsWith('tt') && /^\d+$/.test(cleanImdb)) {
+        cleanImdb = `tt${cleanImdb}`;
+    }
 
     // Parallel fetch: TMDb lookup + OMDb ratings + optional AniList
     const [tmdbFindRes, omdbRatings, aniListMeta] = await Promise.all([
-        fetch(`${TMDB_API_BASE}/find/${cleanImdb}?api_key=${tmdbKey}&external_source=imdb_id`)
-            .then((r) => (r.ok ? r.json() : null))
-            .catch(() => null),
-        fetchOmdbRatings(cleanImdb),
+        directTmdbData
+            ? Promise.resolve(null)
+            : fetch(`${TMDB_API_BASE}/find/${cleanImdb}?api_key=${tmdbKey}&external_source=imdb_id`)
+                  .then((r) => (r.ok ? r.json() : null))
+                  .catch(() => null),
+        cleanImdb.startsWith('tt') ? fetchOmdbRatings(cleanImdb) : Promise.resolve(null),
         isAnime || malId
             ? fetchAniListMetadata({
                   idMal: malId,
@@ -74,7 +102,7 @@ export async function resolveMediaDetails(options: {
     // Process TMDb item if found
     const movieResult = tmdbFindRes?.movie_results?.[0];
     const tvResult = tmdbFindRes?.tv_results?.[0];
-    const match = movieResult || tvResult;
+    const match = directTmdbData || movieResult || tvResult;
 
     if (match) {
         title = match.title || match.name || titleFallback;
@@ -83,7 +111,7 @@ export async function resolveMediaDetails(options: {
         backdropUrl = match.backdrop_path ? getBackdropUrl(match.backdrop_path, 'original') : undefined;
         tmdbId = match.id;
         tmdbScore = match.vote_average ? Math.round(match.vote_average * 10) / 10 : undefined;
-        type = movieResult ? 'movie' : isAnime ? 'anime' : 'series';
+        type = (directTmdbData?._mediaType === 'movie' || movieResult) ? 'movie' : isAnime ? 'anime' : 'series';
 
         const dateStr = match.release_date || match.first_air_date;
         if (dateStr) {
@@ -99,7 +127,7 @@ export async function resolveMediaDetails(options: {
 
     // Subtask 1: Fetch ClearLogo from TMDb
     if (tmdbId) {
-        const mediaType = movieResult ? 'movie' : 'tv';
+        const mediaType = (directTmdbData?._mediaType === 'movie' || movieResult) ? 'movie' : 'tv';
         subTasks.push(
             fetchTmdbClearLogo(mediaType, tmdbId).then((logo) => {
                 if (logo) logoUrl = logo;

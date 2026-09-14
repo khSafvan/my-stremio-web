@@ -90,6 +90,33 @@ export const fetchTmdbPopular = async (
     return data.results || [];
 };
 
+export const fetchTmdbTopRated = async (
+    mediaType: 'movie' | 'tv' = 'movie',
+    page: number = 1
+): Promise<TmdbMediaItem[]> => {
+    const key = getTmdbApiKey();
+    const url = `${TMDB_BASE_URL}/${mediaType}/top_rated?api_key=${key}&page=${page}`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`TMDb top_rated fetch failed: ${resp.status}`);
+    const data = await resp.json();
+    return data.results || [];
+};
+
+export const fetchTmdbDetails = async (
+    mediaType: 'movie' | 'tv',
+    tmdbId: number | string
+): Promise<any | null> => {
+    try {
+        const key = getTmdbApiKey();
+        const url = `${TMDB_BASE_URL}/${mediaType}/${tmdbId}?api_key=${key}&append_to_response=external_ids,videos,credits`;
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        return await resp.json();
+    } catch {
+        return null;
+    }
+};
+
 export const fetchTmdbClearLogo = async (
     mediaType: 'movie' | 'tv',
     tmdbId: number | string

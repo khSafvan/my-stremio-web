@@ -20,7 +20,7 @@ const styles = require('./styles');
 const ProtectedRoutes = withCoreSuspender(Routes, () => (
     <SpringrollLoader size="fullscreen" label="Loading..." />
 ));
-const NAVIGATE_TABS_ROUTES = ['/', '/library', '/calendar', '/addons', '/settings'];
+const NAVIGATE_TABS_ROUTES = ['/', '/library', '/calendar', '/settings'];
 const TORRENT_FILE_TYPES = ['application/x-bittorrent'];
 
 const App = () => {

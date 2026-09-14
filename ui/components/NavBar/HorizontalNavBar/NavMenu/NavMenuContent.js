@@ -102,25 +102,15 @@ const NavMenuContent = ({ onClick }) => {
                     <Icon className={styles['icon']} name={'settings'} />
                     <div className={styles['nav-menu-option-label']}>{ t('SETTINGS') }</div>
                 </Button>
-                <Button className={styles['nav-menu-option-container']} title={ t('ADDONS') } href={'#/addons'}>
-                    <Icon className={styles['icon']} name={'addons-outline'} />
-                    <div className={styles['nav-menu-option-label']}>{ t('ADDONS') }</div>
-                </Button>
                 <Button className={styles['nav-menu-option-container']} title={ t('PLAY_URL_MAGNET_LINK') } onClick={onPlayMagnetLinkClick}>
                     <Icon className={styles['icon']} name={'magnet-link'} />
                     <div className={styles['nav-menu-option-label']}>{ t('PLAY_URL_MAGNET_LINK') }</div>
                 </Button>
-                <Button className={styles['nav-menu-option-container']} title={ t('HELP_FEEDBACK') } href={'https://stremio.zendesk.com/'} target={'_blank'}>
-                    <Icon className={styles['icon']} name={'help'} />
-                    <div className={styles['nav-menu-option-label']}>{ t('HELP_FEEDBACK') }</div>
-                </Button>
             </div>
             <div className={styles['nav-menu-section']}>
-                <Button className={styles['nav-menu-option-container']} title={ t('TERMS_OF_SERVICE') } href={'https://www.stremio.com/tos'} target={'_blank'}>
-                    <div className={styles['nav-menu-option-label']}>{ t('TERMS_OF_SERVICE') }</div>
-                </Button>
-                <Button className={styles['nav-menu-option-container']} title={ t('PRIVACY_POLICY') } href={'https://www.stremio.com/privacy'} target={'_blank'}>
-                    <div className={styles['nav-menu-option-label']}>{ t('PRIVACY_POLICY') }</div>
+                <Button className={styles['nav-menu-option-container']} title={ 'Springroll' } href={'https://github.com/khSafvan/my-stremio-web'} target={'_blank'}>
+                    <Icon className={styles['icon']} name={'help'} />
+                    <div className={styles['nav-menu-option-label']}>{ 'About Springroll' }</div>
                 </Button>
                 {
                     profile.auth !== null ?
