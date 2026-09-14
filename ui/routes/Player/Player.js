@@ -566,7 +566,7 @@ const Player = () => {
                 assSubtitlesStyling: settings.assSubtitlesStyling,
                 gpuVideoProcessing: settings.gpuVideoProcessing && platform.shell.capabilities.gpuVideoProcessing,
                 videoMode: settings.videoMode,
-                platform: isNativeShell ? 'windows' : platform.name,
+                platform: platform.name,
                 streamingServerURL: streamingServer.baseUrl ?
                     casting ?
                         streamingServer.baseUrl
@@ -577,8 +577,7 @@ const Player = () => {
                 seriesInfo: player.seriesInfo,
             }, {
                 chromecastTransport: services.chromecast.active ? services.chromecast.transport : null,
-                shellTransport: isNativeShell ? platform.shell : null,
-                mpvSeparateWindow: true,
+                shellTransport: null,
             });
         }
     }, [streamingServer.baseUrl, player.selected, player.stream, streamSubtitles, forceTranscoding, casting, fallbackTranscoding, cancelKeyboardSeek, mediaCaps, settings.surroundSound, settings.hardwareDecoding, settings.assSubtitlesStyling, settings.gpuVideoProcessing, settings.videoMode, platform.name, platform.shell]);

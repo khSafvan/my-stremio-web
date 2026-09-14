@@ -34,6 +34,7 @@ const VIDEO_CODEC_CONFIGS: CodecConfig[] = [
             'video/mp4; codecs="hvc1.1.6.L150.B0"',
             'video/mp4; codecs="hev1.2.4.L153.B0"',
         ],
+        force: typeof window !== 'undefined' && !!('__TAURI_INTERNALS__' in window || '__TAURI__' in window),
     },
     {
         codec: 'vp8',
@@ -105,6 +106,7 @@ const AUDIO_CODEC_CONFIGS: CodecConfig[] = [
             'audio/mp4; codecs="ac-3"',
             'audio/mp4; codecs="ac3"',
         ],
+        force: typeof window !== 'undefined' && !!('__TAURI_INTERNALS__' in window || '__TAURI__' in window),
     },
     {
         codec: 'eac3',
@@ -113,6 +115,23 @@ const AUDIO_CODEC_CONFIGS: CodecConfig[] = [
             'audio/mp4; codecs="ec-3"',
             'audio/mp4; codecs="eac3"',
         ],
+        force: typeof window !== 'undefined' && !!('__TAURI_INTERNALS__' in window || '__TAURI__' in window),
+    },
+    {
+        codec: 'dts',
+        mimes: [
+            'audio/vnd.dts',
+            'audio/x-dts',
+            'audio/dts',
+        ],
+        force: typeof window !== 'undefined' && !!('__TAURI_INTERNALS__' in window || '__TAURI__' in window),
+    },
+    {
+        codec: 'truehd',
+        mimes: [
+            'audio/truehd',
+        ],
+        force: typeof window !== 'undefined' && !!('__TAURI_INTERNALS__' in window || '__TAURI__' in window),
     },
 ];
 
@@ -164,12 +183,14 @@ export function getMediaCapabilities(forceRefresh = false): MediaCapabilities {
         return cachedCapabilities;
     }
 
+    const isTauri = typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
+
     if (typeof document === 'undefined') {
         return {
-            formats: ['mp4', 'matroska,webm'],
+            formats: ['mp4', 'matroska,webm', 'matroska', 'webm', 'avi', 'quicktime,mov', 'mpegts', 'ts'],
             videoCodecs: ['h264', 'hevc', 'h265', 'vp8', 'vp9', 'av1'],
-            audioCodecs: ['aac', 'mp3', 'opus', 'vorbis', 'flac', 'ac3', 'eac3'],
-            maxAudioChannels: 2,
+            audioCodecs: ['aac', 'mp3', 'opus', 'vorbis', 'flac', 'ac3', 'eac3', 'dts', 'truehd'],
+            maxAudioChannels: 6,
         };
     }
 
@@ -180,8 +201,11 @@ export function getMediaCapabilities(forceRefresh = false): MediaCapabilities {
     const canPlayMatroska = mediaElement.canPlayType('video/x-matroska');
     const isChromeOrCast = !!(window.chrome || (window as unknown as { cast?: unknown }).cast);
 
-    if (canPlayWebM || canPlayMatroska || isChromeOrCast) {
-        formats.push('matroska,webm');
+    if (isTauri || canPlayWebM || canPlayMatroska || isChromeOrCast) {
+        formats.push('matroska,webm', 'matroska', 'webm');
+    }
+    if (isTauri) {
+        formats.push('avi', 'quicktime,mov', 'mpegts', 'ts');
     }
     if (mediaElement.canPlayType('video/ogg')) {
         formats.push('ogg');
@@ -189,10 +213,10 @@ export function getMediaCapabilities(forceRefresh = false): MediaCapabilities {
 
     const videoCodecs = VIDEO_CODEC_CONFIGS.flatMap((config) => canPlayConfig(config, mediaElement));
     const audioCodecs = AUDIO_CODEC_CONFIGS.flatMap((config) => canPlayConfig(config, mediaElement));
-    const maxAudioChannels = getMaxAudioChannels();
+    const maxAudioChannels = isTauri ? 6 : getMaxAudioChannels();
 
     cachedCapabilities = {
-        formats,
+        formats: Array.from(new Set(formats)),
         videoCodecs: Array.from(new Set(videoCodecs)),
         audioCodecs: Array.from(new Set(audioCodecs)),
         maxAudioChannels,

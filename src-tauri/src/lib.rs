@@ -43,7 +43,6 @@ pub fn run() {
     let server_manager_panic = server_manager.clone();
 
     let mpv_manager = Arc::new(MpvManager::new());
-    let mpv_manager_setup = mpv_manager.clone();
     let mpv_manager_exit = mpv_manager.clone();
     let mpv_manager_panic = mpv_manager.clone();
 
@@ -64,13 +63,9 @@ pub fn run() {
             shell_get_info,
             shell_send_mpv
         ])
-        .setup(move |app| {
+        .setup(move |_app| {
             // Start the streaming server if needed
             server_manager_setup.start();
-            // Start background MPV in headless idle mode so IPC is immediately available
-            if let Err(e) = mpv_manager_setup.start(&app.handle().clone()) {
-                eprintln!("[Tauri Setup] Warning: Failed to pre-start mpv: {}", e);
-            }
             Ok(())
         })
         .build(tauri::generate_context!())
