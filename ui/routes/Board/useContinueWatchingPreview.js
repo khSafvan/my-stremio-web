@@ -2,8 +2,19 @@
 
 const React = require('react');
 const { useModelState } = require('stremio/common');
+const { getLocalContinueWatching } = require('stremio/services/UnifiedMedia');
 
 const useContinueWatchingPreview = () => {
+    const [simklProgress, setSimklProgress] = React.useState(() => getLocalContinueWatching());
+
+    React.useEffect(() => {
+        const onUpdate = (event) => {
+            setSimklProgress(event.detail || getLocalContinueWatching());
+        };
+        window.addEventListener('springroll_continue_watching_updated', onUpdate);
+        return () => window.removeEventListener('springroll_continue_watching_updated', onUpdate);
+    }, []);
+
     const action = React.useMemo(
         () => ({
             action: 'Load',
@@ -38,11 +49,29 @@ const useContinueWatchingPreview = () => {
               ? continueWatching.catalog.items
               : [];
 
+        // Map SIMKL / local progress into Continue Watching format
+        const simklItems = (simklProgress || []).map((item) => ({
+            _id: item.mediaId,
+            id: item.mediaId,
+            name: item.title,
+            type: item.type === 'show' ? 'series' : item.type,
+            poster: item.backdropUrl || item.posterUrl,
+            posterShape: 'landscape',
+            progress: item.progressPercent,
+            state: {
+                time: item.currentTimeSeconds,
+                duration: item.durationSeconds,
+            },
+            deepLinks: {
+                metaDetailsVideos: `#/metadetails/${item.type === 'show' ? 'series' : 'movie'}/${item.mediaId}`,
+            }
+        }));
+
         // Deduplicate items by _id or id
         const seen = new Set();
         const merged = [];
 
-        for (const item of [...previewItems, ...cwItems]) {
+        for (const item of [...simklItems, ...previewItems, ...cwItems]) {
             const key = item._id || item.id;
             if (key && !seen.has(key)) {
                 seen.add(key);

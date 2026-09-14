@@ -31,6 +31,7 @@ const styles = require('./styles');
 const { default: StreamingServerWarning } = require('./StreamingServerWarning');
 const { useSearchParams, useNavigate } = require('react-router-dom');
 const { useCore } = require('stremio/core');
+const { MetadataBridge } = require('stremio/services');
 
 const THRESHOLD = 5;
 
@@ -48,6 +49,74 @@ const Board = () => {
 
     const categoryParam = searchParams.get('category') || searchParams.get('type') || 'all';
     const [selectedCategory, setSelectedCategory] = React.useState(categoryParam);
+    const [bridgeFeed, setBridgeFeed] = React.useState(null);
+
+    React.useEffect(() => {
+        let cancelled = false;
+        async function loadFeed() {
+            try {
+                if (selectedCategory === 'anime') {
+                    const anime = await MetadataBridge.getAnimeFeed();
+                    if (!cancelled) {
+                        setBridgeFeed({ type: 'anime', title: 'SIMKL Trending & Airing Anime', items: anime });
+                    }
+                } else if (selectedCategory === 'movie') {
+                    const movies = await MetadataBridge.getTrendingFeed('movie');
+                    if (!cancelled) {
+                        setBridgeFeed({ type: 'movie', title: 'TMDb Trending Movies', items: movies });
+                    }
+                } else if (selectedCategory === 'series') {
+                    const series = await MetadataBridge.getTrendingFeed('tv');
+                    if (!cancelled) {
+                        setBridgeFeed({ type: 'series', title: 'TMDb Trending Series', items: series });
+                    }
+                } else {
+                    const trending = await MetadataBridge.getTrendingFeed('all');
+                    if (!cancelled) {
+                        setBridgeFeed({ type: 'all', title: 'Trending Today', items: trending });
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load bridge feed in Board:', err);
+            }
+        }
+        loadFeed();
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedCategory]);
+
+    const bridgeCatalogRow = React.useMemo(() => {
+        if (!bridgeFeed || !Array.isArray(bridgeFeed.items) || bridgeFeed.items.length === 0) {
+            return null;
+        }
+
+        const mapped = bridgeFeed.items.map((item) => ({
+            id: item.id,
+            _id: item.id,
+            name: item.name,
+            type: item.type,
+            poster: item.poster,
+            posterShape: 'poster',
+            background: item.background,
+            releaseInfo: item.releaseInfo,
+            imdbRating: item.imdbRating,
+            description: item.description,
+            deepLinks: {
+                metaDetailsVideos: `#/metadetails/${item.type}/${item.id}`
+            }
+        }));
+
+        return {
+            id: `bridge_${bridgeFeed.type}`,
+            name: bridgeFeed.title,
+            type: bridgeFeed.type,
+            content: {
+                type: 'Ready',
+                content: mapped
+            }
+        };
+    }, [bridgeFeed]);
 
     React.useEffect(() => {
         if (categoryParam && categoryParam !== selectedCategory) {
@@ -291,7 +360,21 @@ const Board = () => {
                         />
                     ) : null}
 
-                    {/* 6. Dynamic Catalogs */}
+                    {/* 6. Decoupled Catalog Feed (TMDb / SIMKL Bridge) */}
+                    {bridgeCatalogRow ? (
+                        <MetaRow
+                            key={bridgeCatalogRow.id}
+                            className={classnames(
+                                styles['board-row'],
+                                styles['board-row-poster'],
+                                'animation-fade-in'
+                            )}
+                            catalog={bridgeCatalogRow}
+                            itemComponent={MetaItem}
+                        />
+                    ) : null}
+
+                    {/* 7. Dynamic Addon Catalogs */}
                     {filteredCatalogRows.map(({ catalog, index }) => {
                         switch (catalog.content?.type) {
                             case 'Ready': {
@@ -347,7 +430,8 @@ const Board = () => {
 
                     {/* Fallback exploration card when filtered category has no immediate rows */}
                     {selectedCategory !== 'all' &&
-                    filteredCatalogRows.length === 0 ? (
+                    filteredCatalogRows.length === 0 &&
+                    !bridgeCatalogRow ? (
                         <div className={styles['category-empty-state']}>
                             <div className={styles['empty-title']}>
                                 {t.stringWithPrefix(selectedCategory, 'TYPE_')}
