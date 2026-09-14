@@ -120,7 +120,50 @@ To deliver a truly cinema-grade, ultra-snappy experience with zero friction and 
 
 ---
 
+### 2.3 Unified Media Aggregation Pipeline & Native Tracking
+
+```
+                           ┌───────────────────────────────┐
+                           │      Unified Media Client     │
+                           └───────────────┬───────────────┘
+                                           │
+  ┌───────────────────────┬────────────────┼────────────────┬──────────────────────┐
+  ▼                       ▼                ▼                ▼                      ▼
+[Discovery & Info]      [Ratings & Art]   [Anime Core]     [Trailers]          [Streams & Subs]
+• TMDb API (Feeds)      • OMDb / MDBList  • AniList GraphQL• TMDb /videos      • AIOStreams (Debrid)
+• SIMKL API (Scrobble)    (RT Tomatometer,  (Score, seasonal (YouTube keys)   • OpenSubtitles v1
+  - /sync/playback        IMDb, Metacritic)  schedules,    • Invidious / Piped  (Direct .vtt/.srt)
+  - /sync/history       • RPDB / Fanart.tv   zero-key)      (Zero API-key)
+                          (ClearLogos,    • Kitsu / MAL
+                           textless art)    (Season mapping)
+```
+
+#### Core Components & Service Responsibilities:
+1. **SIMKL Playback Tracking & Scrobble Engine**:
+   - **Continue Watching Row (`/sync/playback`)**: Tracks active playback timestamps and percentages across movies, series, and anime. Items remain in playback manager until completed.
+   - **Completion & Scrobble (`/sync/history`)**: Automatically logs the view session when crossing $\ge$ 80–90% threshold and increments series to the next episode.
+   - **Rate Limit Compliance**: Capped at 10 GET/sec and 1 POST/sec; progress updates throttled on pause, stop, or 30–60s intervals (never per-frame).
+   - **Local-First + Cloud Sync**: Instant zero-login experience saved in client storage (`localStorage`), with optional 1-click SIMKL OAuth for cross-device cloud sync.
+2. **Direct Subtitles Engine (OpenSubtitles REST API v1)**:
+   - Direct integration with `api.opensubtitles.com/v1/subtitles` querying by IMDb ID (`tt...`) or video file hash.
+   - Direct download via `/api/v1/download` fetching clean `.vtt` / `.srt` injected straight into the video player, eliminating subtitle addon scrapers.
+3. **Multi-Ratings & Critic Consensus**:
+   - **OMDb API Integration**: Fetches Rotten Tomatoes Tomatometer percentage, IMDb user score, and Metacritic score in a single query.
+   - **MDBList Support**: Optional integration for Trakt, Letterboxd, and audience Popcorn scores.
+4. **Artwork Engine (ClearLogos & Posters)**:
+   - **Fanart.tv / TMDb ClearLogos**: High-resolution transparent PNG title logos for Apple TV-style hero showcases.
+   - **RPDB (Rating Poster DB)**: Dynamic poster feeds with optional ratings badges.
+5. **Anime Core (AniList GraphQL + Kitsu)**:
+   - **Zero-Key AniList GraphQL**: Generous, key-free API retrieving romanized/native titles, next airing countdown, studio info, average scores, and YouTube trailer keys in a single query.
+   - **Kitsu Mapping**: Translates AniList/MAL episode numbers into standard Western seasons for seamless scraper compatibility.
+6. **Trailer Engine (YouTube / Piped / Invidious)**:
+   - Extracts YouTube video keys from TMDb `/videos` or AniList GraphQL trailer objects.
+   - Resolves to privacy-friendly embed (`youtube-nocookie.com/embed/{key}`) or direct MP4/HLS streams via Piped/Invidious without burning Google API quotas.
+
+---
+
 ## 3. Global Navigation & Application Frame Architecture
+
 
 
 ```

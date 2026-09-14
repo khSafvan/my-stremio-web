@@ -6,6 +6,7 @@ const { GamepadProvider, useGamepad } = require('./GamepadContext');
 
 const MetadataBridge = require('./MetadataBridge');
 const AIOStreams = require('./AIOStreams');
+const UnifiedMedia = require('./UnifiedMedia');
 
 module.exports = {
     Chromecast,
@@ -15,5 +16,7 @@ module.exports = {
     useGamepad,
     MetadataBridge,
     AIOStreams,
+    UnifiedMedia,
 };
+
 
