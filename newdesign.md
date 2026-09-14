@@ -24,6 +24,61 @@ Springroll's next-generation user interface represents the confluence of **Moder
 | **Modular Hubs & Technical Media Flags** | **Arctic Fuse 3 (jurialmunkey)** | Hub-based virtualized widgets, ClearLogo rendering, and technical media badges (`4K UHD`, `HDR10`, `Dolby Vision`, `Dolby Atmos`, `DTS:X`, `IMDb ★`). |
 | **Cinematic Focus & "Up Next" Queue** | **Apple TV+ / tvOS HIG** | Full-bleed dual-axis gradient masks, subtle 1.04x focus scaling, parallax poster depth, and prominent resume queues. |
 | **Lean Performance & In-Player AI** | **Forward Streaming Hub** | Hardware-tier single-stream buffer management, native `libmpv` FFI rendering, and on-demand GPU AI enhancement shaders (FidelityFX CAS & Anime4K Lite, OFF by default). |
+| **Unified Metadata & Anime ID Bridge** | **TMDb + SIMKL Architecture** | TMDb powers dynamic trending/popular rows, 4K backdrops, and ClearLogos; SIMKL powers dedicated anime carousels and resolves cross-platform IDs (`IMDb` $\leftrightarrow$ `TMDb` $\leftrightarrow$ `MAL`). |
+
+---
+
+## 2.1 Discovery, Metadata & Catalog Architecture (TMDb + SIMKL + Addon Protocol)
+
+To deliver a truly cinema-grade, ultra-snappy experience with zero friction and universal anime support, Springroll adopts a 3-tier decoupled architecture:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        SPRINGROLL CLIENT UI                            │
+│  [Hero Banner]   [Trending Movies]   [Popular Series]   [Anime Hub]    │
+└──────────────┬───────────────────────────────┬─────────────────────────┘
+               │                               │
+       (Movies & Series)                    (Anime & Watchlists)
+               │                               │
+               ▼                               ▼
+     ┌───────────────────┐           ┌───────────────────┐
+     │     TMDb API      │           │     SIMKL API     │
+     │ /trending, /images│           │  Unified Taxonomy │
+     │  ClearLogo, 4K BG │           │  Anime Carousels  │
+     └─────────┬─────────┘           └─────────┬─────────┘
+               │                               │
+               └───────────────┬───────────────┘
+                               │
+                Normalized Standard Media ID
+                     (`imdb_id`: "tt1234567")
+                               │
+                               ▼
+               ┌───────────────────────────────┐
+               │    STREMIO ADDON PROTOCOL     │
+               │ (Torrentio, Cyberflix, Debrid)│
+               │     `stream/:type/:id.json`   │
+               └───────────────┬───────────────┘
+                               │ Playable Streams
+                               ▼
+               ┌───────────────────────────────┐
+               │     IN-PROCESS LIBMPV FFI     │
+               │    Hardware Playback Engine   │
+               └───────────────────────────────┘
+```
+
+### Layer Breakdown:
+1. **Home Feeds & Discovery (The Movie Database - TMDb)**:
+   - **Endpoints**: `/trending/all/day`, `/trending/movie/week`, `/trending/tv/week`, `/discover/movie`, `/discover/tv`.
+   - **Why TMDb**: Global Fastly CDN cache provides near-instant response times; returns high-resolution backdrop stills (`w1280` / `original`) and dedicated ClearLogo PNGs (`/images?include_image_language=en,null`).
+2. **Anime & Unified Tracking (SIMKL API)**:
+   - **Endpoints**: `https://api.simkl.com/` (`/anime/genres`, `/anime/airing`, `/search/id`).
+   - **Why SIMKL**: Western scrapers and databases struggle with anime seasons, OVAs, and title romanization. SIMKL provides native anime tracking and a **bi-directional ID bridge** (`IMDb` $\leftrightarrow$ `TMDb` $\leftrightarrow$ `MAL` $\leftrightarrow$ `SIMKL`).
+   - **Zero-Failure Stream Resolution**: When an anime item is browsed from SIMKL, Springroll automatically carries its resolved IMDb `tt...` ID or TMDb ID so that stream scrapers match immediately without missing torrents or debrid cached files.
+3. **Stream Resolution (Stremio Addon Protocol)**:
+   - Preserves 100% compatibility with existing community scrapers (Torrentio, Cinemeta, Cyberflix, MediaFusion, Comet, Real-Debrid).
+   - The addon protocol receives the standard `tt...` ID and returns video stream manifests.
+4. **Streaming Availability Badges (Optional Watchmode / JustWatch Partner)**:
+   - Enables "Available legally on Netflix, Prime, Disney+" badging on media detail cards.
 
 ---
 
