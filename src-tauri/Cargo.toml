@@ -1,8 +1,8 @@
 [package]
-name = "serivia"
+name = "springroll"
 version = "5.0.0"
-description = "Serivia Desktop - Next-Generation High-Performance Streaming Hub"
-authors = ["Serivia Authors", "Stremio Open-Source Contributors"]
+description = "Springroll Desktop - Next-Generation High-Performance Streaming Hub"
+authors = ["Springroll Authors", "Stremio Open-Source Contributors"]
 license = "GPL-2.0"
 repository = "https://github.com/Stremio/stremio-web"
 edition = "2021"
@@ -11,7 +11,7 @@ rust-version = "1.77.2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "serivia_lib"
+name = "springroll_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

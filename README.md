@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎬 Serivia Desktop
+# 🎬 Springroll Desktop
 
 **Next-Generation High-Performance Streaming Platform**
 
@@ -16,7 +16,7 @@
 
 ## 🌟 Overview
 
-**Serivia** is a high-performance, cinema-grade streaming hub built for modern desktop systems and big screens. Inspired by modern minimalist interfaces (**Serivia UI, Arctic Fuse 3, Apple TV+**), Serivia unites home recommendations and deep catalog discovery into a seamless, unified discovery experience while dramatically reducing resource overhead on low-power and high-end hardware alike.
+**Springroll** is a high-performance, cinema-grade streaming hub built for modern desktop systems and big screens. Inspired by modern minimalist interfaces (**Serivia UI, Arctic Fuse 3, Apple TV+**), Springroll unites home recommendations and deep catalog discovery into a seamless, unified discovery experience while dramatically reducing resource overhead on low-power and high-end hardware alike.
 
 ---
 
@@ -49,7 +49,7 @@
 
 ```mermaid
 flowchart LR
-    subgraph Desktop["Serivia Native Desktop (Tauri v2 + GTK)"]
+    subgraph Desktop["Springroll Native Desktop (Tauri v2 + GTK)"]
         Window["GtkApplicationWindow"]
         Overlay["GtkOverlay"]
         GLArea["GtkGLArea (libmpv FFI Video Canvas)"]
@@ -57,8 +57,8 @@ flowchart LR
         Supervisor["Streaming Server Supervisor"]
     end
 
-    subgraph Frontend["Serivia Frontend Engine"]
-        UI["Serivia Flat React UI"]
+    subgraph Frontend["Springroll Frontend Engine"]
+        UI["Springroll Flat React UI"]
         WASM["stremio-core WASM Worker"]
         PlayerHUD["libmpv HUD & Shader Controls"]
     end
@@ -89,8 +89,8 @@ flowchart LR
 ### Quick Launch (Dev Mode)
 
 ```bash
-# Launch Serivia Desktop directly with Cargo:
-cargo run --bin serivia
+# Launch Springroll Desktop directly with Cargo:
+cargo run --bin springroll
 
 # Or use the developer launcher script:
 ./scripts/desktop.sh
@@ -99,7 +99,7 @@ cargo run --bin serivia
 ### Compiling Production Binaries
 
 ```bash
-# Build optimized native binary (target/release/serivia):
+# Build optimized native binary (target/release/springroll):
 ./scripts/build.sh --release
 ```
 
@@ -109,9 +109,9 @@ cargo run --bin serivia
 
 | Command | Script Equivalent | Description |
 |---|---|---|
-| `cargo run --bin serivia` | `./scripts/dev.sh` | Launch Serivia Linux desktop client directly |
-| `cargo build --bin serivia` | `./scripts/build.sh` | Compile native debug binary (`target/debug/serivia`) |
-| `cargo build --release --bin serivia` | `./scripts/build.sh --release` | Compile optimized release binary (`target/release/serivia`) |
+| `cargo run --bin springroll` | `./scripts/dev.sh` | Launch Springroll Linux desktop client directly |
+| `cargo build --bin springroll` | `./scripts/build.sh` | Compile native debug binary (`target/debug/springroll`) |
+| `cargo build --release --bin springroll` | `./scripts/build.sh --release` | Compile optimized release binary (`target/release/springroll`) |
 | `npm run build:ui` / `pnpm run build:ui` | - | Recompile the frontend Webpack production bundle |
 | `npm run test` / `pnpm test` | `./scripts/test.sh` | Run Jest unit tests |
 | `npm run lint` / `pnpm run lint` | `./scripts/lint.sh` | Run ESLint check |
@@ -120,7 +120,7 @@ cargo run --bin serivia
 
 ## 🙏 Credits & Acknowledgements
 
-Serivia is proudly developed upon the open-source foundations of the **Stremio** ecosystem. We extend our deep gratitude and full credit to:
+Springroll is proudly developed upon the open-source foundations of the **Stremio** ecosystem. We extend our deep gratitude and full credit to:
 
 - **Smart Code OOD** and the **Stremio Open-Source Project** ([Stremio GitHub](https://github.com/Stremio)) for creating the exceptional Stremio Core protocol, addon architecture, streaming engine (EngineFS), and community translations.
 - **jurialmunkey** for the brilliant UI concepts and widget hub inspiration from **Arctic Fuse 3**.

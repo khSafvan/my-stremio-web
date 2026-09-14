@@ -28,5 +28,5 @@ if ! command -v cargo >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "==> Launching Serivia Desktop with Cargo..."
-exec cargo run --bin serivia
+echo "==> Launching Springroll Desktop with Cargo..."
+exec cargo run --bin springroll

@@ -33,10 +33,10 @@ MODE="${1:-}"
 
 if [ "${MODE}" = "--release" ] || [ "${MODE}" = "release" ]; then
     echo "==> Compiling optimized release binary with Cargo..."
-    cargo build --release --bin serivia
-    echo "==> Release binary compiled to: ${PROJECT_ROOT}/target/release/serivia"
+    cargo build --release --bin springroll
+    echo "==> Release binary compiled to: ${PROJECT_ROOT}/target/release/springroll"
 else
-    echo "==> Compiling Serivia Desktop binary with Cargo..."
-    cargo build --bin serivia
-    echo "==> Binary compiled to: ${PROJECT_ROOT}/target/debug/serivia"
+    echo "==> Compiling Springroll Desktop binary with Cargo..."
+    cargo build --bin springroll
+    echo "==> Binary compiled to: ${PROJECT_ROOT}/target/debug/springroll"
 fi

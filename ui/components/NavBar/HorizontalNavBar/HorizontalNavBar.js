@@ -5,7 +5,7 @@ const { useGoBack } = require('stremio-router');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const { Button, Image, SeriviaLogo } = require('stremio/components');
+const { Button, Image, SpringrollLogo } = require('stremio/components');
 const { useFullscreen } = require('stremio/common/Fullscreen');
 const {
     useHorizontalNavGamepadNavigation
@@ -78,7 +78,7 @@ const HorizontalNavBar = React.memo(
                     </Button>
                 ) : (
                     <div className={styles['logo-container']}>
-                        <SeriviaLogo />
+                        <SpringrollLogo />
                     </div>
                 )}
                 {typeof title === 'string' && title.length > 0 ? (

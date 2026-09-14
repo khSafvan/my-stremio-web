@@ -33,6 +33,7 @@ import Transition from './Transition';
 import UpdateBanner from './UpdateBanner';
 import Video from './Video';
 import ActionsGroup from './ActionsGroup';
+import SpringrollLogo from './SpringrollLogo';
 import SeriviaLogo from './SeriviaLogo';
 
 export {
@@ -72,5 +73,6 @@ export {
     UpdateBanner,
     Video,
     ActionsGroup,
+    SpringrollLogo,
     SeriviaLogo
 };

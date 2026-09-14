@@ -177,6 +177,8 @@ module.exports = (env, argv) => ({
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.json', '.less', '.wasm'],
         alias: {
+            'springroll': path.resolve(__dirname, 'ui'),
+            'springroll-router': path.resolve(__dirname, 'ui', 'router'),
             'serivia': path.resolve(__dirname, 'ui'),
             'serivia-router': path.resolve(__dirname, 'ui', 'router'),
             'stremio': path.resolve(__dirname, 'ui'),
