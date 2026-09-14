@@ -1,5 +1,5 @@
-# Springroll / Serivia Unified Design System & Architecture Specification
-*(Inspired by Serivia UI, Arctic Fuse 3, Apple TV+, and Forward Streaming Hub)*
+# Springroll Unified Design System & Architecture Specification
+*(Inspired by Modern Cinema UI, Arctic Fuse 3, Apple TV+, and Forward Streaming Hub)*
 
 ---
 
@@ -19,8 +19,8 @@ Springroll's next-generation user interface represents the confluence of **Moder
 
 | Design Pillar | Source Inspiration | Concrete Implementation in Springroll |
 | :--- | :--- | :--- |
-| **Persistent Side Dock & Bottom Queue** | **Serivia Reference Mock** | Left-hand persistent navigation dock with an integrated, bottom-anchored "Continue Watching" stack of 16:9 landscape cards with live progress bars and instant play. |
-| **Top Bar Header & Scoped Search** | **Serivia Reference Mock** | Category dropdown selector (`Movies ⌵`, `Series ⌵`) + wide pill search bar with filter toggle + user profile status pill (`Yuki R. Premium ⌵`). |
+| **Persistent Side Dock & Bottom Queue** | **Reference UI Mockup** | Left-hand persistent navigation dock with an integrated, bottom-anchored "Continue Watching" stack of 16:9 landscape cards with live progress bars and instant play. |
+| **Top Bar Header & Scoped Search** | **Reference UI Mockup** | Category dropdown selector (`Movies ⌵`, `Series ⌵`) + wide pill search bar with filter toggle + user profile status pill (`Yuki R. Premium ⌵`). |
 | **Modular Hubs & Technical Media Flags** | **Arctic Fuse 3 (jurialmunkey)** | Hub-based virtualized widgets, ClearLogo rendering, and technical media badges (`4K UHD`, `HDR10`, `Dolby Vision`, `Dolby Atmos`, `DTS:X`, `IMDb ★`). |
 | **Cinematic Focus & "Up Next" Queue** | **Apple TV+ / tvOS HIG** | Full-bleed dual-axis gradient masks, subtle 1.04x focus scaling, parallax poster depth, and prominent resume queues. |
 | **Lean Performance & In-Player AI** | **Forward Streaming Hub** | Hardware-tier single-stream buffer management, native `libmpv` FFI rendering, and on-demand GPU AI enhancement shaders (FidelityFX CAS & Anime4K Lite, OFF by default). |
@@ -69,7 +69,7 @@ Springroll's next-generation user interface represents the confluence of **Moder
 - **Secondary Group**:
   - `Settings` (`route: 'settings'`) — Hardware, streaming, audio, subtitles, and performance tier configuration.
   - `Support / Addons` (`route: 'addons'`) — Installed and community addon catalog.
-- **Integrated "Continue Watching" Sidebar Stack (Serivia Innovation)**:
+- **Integrated "Continue Watching" Sidebar Stack**:
   - Fixed at the bottom of the navigation dock for instant 1-click resumption.
   - Stack of up to 3 active video cards:
     - 16:9 widescreen thumbnail still with smooth `4px` corners.
@@ -297,7 +297,7 @@ Springroll's next-generation user interface represents the confluence of **Moder
    - Embedded `CategoryPills` and `[ ☰ Shelves | ⊞ Grid ]` view switcher directly on Home (`Board`) and Catalog Grid (`Discover`).
    - Synced category selection with URL search parameters (`?category=movie`, `?category=series`).
    - Aligned `view: 0` in `routerPaths.tsx` for seamless transition between Shelves and Grid modes.
-3. **Phase 3: Serivia Left Dock & Persistent Continue Watching [NEXT]**
+3. **Phase 3: Persistent Left Dock & Continue Watching Stack [NEXT]**
    - Integrate the bottom-anchored 16:9 Continue Watching stack into the left navigation sidebar.
    - Add the top-bar category dropdown selector (`Movies ⌵`, `Series ⌵`).
 4. **Phase 4: Arctic Fuse 3 Metadata & Media Badging**

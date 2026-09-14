@@ -34,7 +34,6 @@ import UpdateBanner from './UpdateBanner';
 import Video from './Video';
 import ActionsGroup from './ActionsGroup';
 import SpringrollLogo from './SpringrollLogo';
-import SeriviaLogo from './SeriviaLogo';
 
 export {
     AddonDetailsModal,
@@ -73,6 +72,6 @@ export {
     UpdateBanner,
     Video,
     ActionsGroup,
-    SpringrollLogo,
-    SeriviaLogo
+    SpringrollLogo
 };
+

@@ -16,7 +16,7 @@
 
 ## 🌟 Overview
 
-**Springroll** is a high-performance, cinema-grade streaming hub built for modern desktop systems and big screens. Inspired by modern minimalist interfaces (**Serivia UI, Arctic Fuse 3, Apple TV+**), Springroll unites home recommendations and deep catalog discovery into a seamless, unified discovery experience while dramatically reducing resource overhead on low-power and high-end hardware alike.
+**Springroll** is a high-performance, cinema-grade streaming hub built for modern desktop systems and big screens. Inspired by modern minimalist interfaces (**Arctic Fuse 3, Apple TV+, and Forward Streaming Hub**), Springroll unites home recommendations and deep catalog discovery into a seamless, unified discovery experience while dramatically reducing resource overhead on low-power and high-end hardware alike.
 
 ---
 

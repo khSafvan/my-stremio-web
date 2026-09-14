@@ -2840,22 +2840,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serivia"
-version = "5.0.0"
-dependencies = [
- "gdk",
- "gtk",
- "libc",
- "libmpv2",
- "log",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-log",
-]
-
-[[package]]
 name = "servo_arc"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2961,6 +2945,22 @@ dependencies = [
  "gobject-sys",
  "libc",
  "system-deps",
+]
+
+[[package]]
+name = "springroll"
+version = "5.0.0"
+dependencies = [
+ "gdk",
+ "gtk",
+ "libc",
+ "libmpv2",
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-log",
 ]
 
 [[package]]
