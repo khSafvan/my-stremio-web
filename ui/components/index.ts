@@ -35,6 +35,8 @@ import Video from './Video';
 import ActionsGroup from './ActionsGroup';
 import SpringrollLogo from './SpringrollLogo';
 import SpringrollIcon from './SpringrollIcon';
+import SpringrollLoader from './SpringrollLoader';
+import SplashScreen from './SplashScreen';
 
 export {
     AddonDetailsModal,
@@ -74,6 +76,8 @@ export {
     Video,
     ActionsGroup,
     SpringrollLogo,
-    SpringrollIcon
+    SpringrollIcon,
+    SpringrollLoader,
+    SplashScreen
 };
 

@@ -14,9 +14,12 @@ const DeepLinkHandler = require('./DeepLinkHandler');
 const { default: UpdaterBanner } = require('./UpdaterBanner');
 const { default: ShortcutsModal } = require('./ShortcutsModal');
 const { default: GamepadModal } = require('./GamepadModal');
+const { SpringrollLoader } = require('stremio/components');
 const styles = require('./styles');
 
-const ProtectedRoutes = withCoreSuspender(Routes);
+const ProtectedRoutes = withCoreSuspender(Routes, () => (
+    <SpringrollLoader size="fullscreen" label="Loading..." />
+));
 const NAVIGATE_TABS_ROUTES = ['/', '/library', '/calendar', '/addons', '/settings'];
 const TORRENT_FILE_TYPES = ['application/x-bittorrent'];
 

@@ -265,7 +265,180 @@
     </head>
 
     <body>
-        <div id="app"></div>
+        <div id="app">
+            <!-- Instant Animated Pre-Hydration Splash Screen -->
+            <style>
+                #initial-splash {
+                    position: fixed;
+                    inset: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background-color: #0D0D11;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 99999;
+                    user-select: none;
+                    overflow: hidden;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Plus Jakarta Sans', sans-serif;
+                }
+                #initial-splash .splash-bg-glow {
+                    position: absolute;
+                    inset: 0;
+                    background: radial-gradient(circle at 50% 48%, rgba(255, 193, 7, 0.08) 0%, rgba(255, 102, 0, 0.03) 40%, rgba(13, 13, 17, 0) 75%);
+                    pointer-events: none;
+                }
+                #initial-splash .splash-center {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2;
+                }
+                #initial-splash .splash-emblem {
+                    width: 130px;
+                    height: 130px;
+                    animation: initEmblemIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+                #initial-splash .splash-orbit-ring {
+                    transform-origin: 60px 60px;
+                    animation: initOrbit 3.2s linear infinite;
+                }
+                #initial-splash .splash-ticket-group {
+                    transform-origin: 60px 60px;
+                    animation: initHover 2.6s ease-in-out infinite;
+                }
+                #initial-splash .splash-play-glyph {
+                    transform-origin: 60px 60px;
+                    animation: initPlayGlow 1.8s ease-in-out infinite;
+                }
+                #initial-splash .splash-wordmark {
+                    margin-top: 1.5rem;
+                    font-size: 2.25rem;
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
+                    line-height: 1;
+                    opacity: 0;
+                    animation: initWordmarkIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+                }
+                #initial-splash .wordmark-spring {
+                    color: #EDEDF2;
+                }
+                #initial-splash .wordmark-roll {
+                    color: #FFC107;
+                    margin-left: 2px;
+                    text-shadow: 0 2px 14px rgba(255, 193, 7, 0.4);
+                }
+                #initial-splash .splash-tagline {
+                    margin-top: 0.625rem;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    letter-spacing: 0.22em;
+                    text-transform: uppercase;
+                    color: #8F8FA0;
+                    opacity: 0;
+                    animation: initTaglineIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+                }
+                #initial-splash .splash-laser-track {
+                    margin-top: 1.75rem;
+                    width: 140px;
+                    height: 3px;
+                    background: rgba(255, 255, 255, 0.08);
+                    border-radius: 3px;
+                    overflow: hidden;
+                    position: relative;
+                    opacity: 0;
+                    animation: initTrackIn 1s ease-out 0.5s forwards;
+                }
+                #initial-splash .splash-laser-beam {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 100%;
+                    width: 45%;
+                    border-radius: 3px;
+                    background: linear-gradient(90deg, transparent, #FF6600, #FFC107, transparent);
+                    box-shadow: 0 0 10px rgba(255, 193, 7, 0.8), 0 0 4px rgba(255, 102, 0, 0.9);
+                    animation: initScan 1.6s ease-in-out infinite;
+                }
+                @keyframes initEmblemIn {
+                    0% { opacity: 0; transform: scale(0.72) translateY(12px); }
+                    100% { opacity: 1; transform: scale(1) translateY(0); }
+                }
+                @keyframes initOrbit {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                @keyframes initHover {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-3px); }
+                }
+                @keyframes initPlayGlow {
+                    0%, 100% { transform: scale(1); opacity: 0.9; }
+                    50% { transform: scale(1.12); opacity: 1; }
+                }
+                @keyframes initWordmarkIn {
+                    0% { opacity: 0; transform: translateY(8px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes initTaglineIn {
+                    0% { opacity: 0; letter-spacing: 0.1em; }
+                    100% { opacity: 0.8; letter-spacing: 0.22em; }
+                }
+                @keyframes initTrackIn {
+                    0% { opacity: 0; transform: scaleX(0.4); }
+                    100% { opacity: 1; transform: scaleX(1); }
+                }
+                @keyframes initScan {
+                    0% { left: -45%; }
+                    100% { left: 100%; }
+                }
+            </style>
+            <div id="initial-splash">
+                <div class="splash-bg-glow"></div>
+                <div class="splash-center">
+                    <div class="splash-emblem">
+                        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block; overflow: visible;">
+                            <defs>
+                                <linearGradient id="initGoldGrad" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FFE082" />
+                                    <stop offset="50%" stop-color="#FFC107" />
+                                    <stop offset="100%" stop-color="#FF8F00" />
+                                </linearGradient>
+                                <linearGradient id="initReelRing" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FFC107" stop-opacity="0.9" />
+                                    <stop offset="50%" stop-color="#FF6600" stop-opacity="0.3" />
+                                    <stop offset="100%" stop-color="#FFC107" stop-opacity="0.9" />
+                                </linearGradient>
+                                <filter id="initEmblemGlow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#FFC107" flood-opacity="0.35" />
+                                    <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#FF6600" flood-opacity="0.25" />
+                                </filter>
+                            </defs>
+                            <circle class="splash-orbit-ring" cx="60" cy="60" r="52" stroke="url(#initReelRing)" stroke-width="2.5" stroke-dasharray="12 9" stroke-linecap="round" />
+                            <circle cx="60" cy="60" r="42" fill="rgba(255, 193, 7, 0.09)" />
+                            <g class="splash-ticket-group" filter="url(#initEmblemGlow)">
+                                <rect x="24" y="34" width="72" height="52" rx="12" fill="url(#initGoldGrad)" />
+                                <rect x="32" y="42" width="7" height="11" rx="3.5" fill="#0D0D11" />
+                                <rect x="32" y="67" width="7" height="11" rx="3.5" fill="#0D0D11" />
+                                <rect x="81" y="42" width="7" height="11" rx="3.5" fill="#0D0D11" />
+                                <rect x="81" y="67" width="7" height="11" rx="3.5" fill="#0D0D11" />
+                                <path class="splash-play-glyph" d="M53 47 L72 60 L53 73 Z" fill="#0D0D11" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="splash-wordmark">
+                        <span class="wordmark-spring">spring</span><span class="wordmark-roll">roll</span>
+                    </div>
+                    <div class="splash-tagline">FREEDOM TO STREAM</div>
+                    <div class="splash-laser-track">
+                        <div class="splash-laser-beam"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <%= htmlWebpackPlugin.tags.bodyTags %>
         <script src="//www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
         <script

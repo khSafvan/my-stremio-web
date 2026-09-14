@@ -1,0 +1,264 @@
+.springroll-splash-container {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0D0D11;
+    overflow: hidden;
+    user-select: none;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &.fade-out {
+        opacity: 0;
+        transform: scale(1.04);
+        pointer-events: none;
+    }
+
+    .splash-ambient-background {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 48%, rgba(255, 193, 7, 0.08) 0%, rgba(255, 102, 0, 0.03) 40%, rgba(13, 13, 17, 0) 75%);
+        pointer-events: none;
+    }
+
+    .splash-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    .splash-emblem-wrapper {
+        width: 130px;
+        height: 130px;
+        position: relative;
+        animation: emblemEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .splash-symbol-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        overflow: visible;
+    }
+
+    .splash-orbit-ring {
+        transform-origin: 60px 60px;
+        animation: spinOrbit 3.2s linear infinite;
+    }
+
+    .splash-ambient-halo {
+        transform-origin: 60px 60px;
+        animation: haloBreathing 2.4s ease-in-out infinite;
+    }
+
+    .splash-ticket-group {
+        transform-origin: 60px 60px;
+        animation: ticketHover 2.6s ease-in-out infinite;
+    }
+
+    .splash-play-glyph {
+        transform-origin: 60px 60px;
+        animation: playGlow 1.8s ease-in-out infinite;
+    }
+
+    .splash-sprocket-dot {
+        animation: sprocketGlow 1.4s ease-in-out infinite alternate;
+    }
+
+    .splash-shimmer-beam {
+        opacity: 0;
+        animation: splashShimmerSweep 3s ease-in-out 0.6s infinite;
+    }
+
+    // Wordmark
+    .splash-wordmark-container {
+        margin-top: 1.5rem;
+        animation: wordmarkReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        opacity: 0;
+    }
+
+    .splash-wordmark {
+        margin: 0;
+        font-family: var(--font-family-title, 'Plus Jakarta Sans', sans-serif);
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
+
+        .wordmark-spring {
+            color: #EDEDF2;
+        }
+
+        .wordmark-roll {
+            color: #FFC107;
+            margin-left: 2px;
+            filter: drop-shadow(0 2px 12px rgba(255, 193, 7, 0.4));
+        }
+    }
+
+    // Tagline
+    .splash-tagline {
+        margin-top: 0.625rem;
+        font-family: var(--font-family-mono, 'JetBrains Mono', monospace);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #8F8FA0;
+        opacity: 0;
+        animation: taglineReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+    }
+
+    // High-Tech Laser Beam Progress Track
+    .splash-progress-track {
+        margin-top: 2rem;
+        width: 140px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+        opacity: 0;
+        animation: trackReveal 1s ease-out 0.5s forwards;
+    }
+
+    .splash-progress-beam {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 45%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, transparent, #FF6600, #FFC107, transparent);
+        box-shadow: 0 0 10px rgba(255, 193, 7, 0.8), 0 0 4px rgba(255, 102, 0, 0.9);
+        animation: laserScan 1.6s ease-in-out infinite;
+    }
+}
+
+// Keyframes
+@keyframes emblemEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.72) translateY(12px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes spinOrbit {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes haloBreathing {
+    0%, 100% {
+        transform: scale(0.9);
+        opacity: 0.35;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 0.85;
+    }
+}
+
+@keyframes ticketHover {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes playGlow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.12);
+        opacity: 1;
+    }
+}
+
+@keyframes sprocketGlow {
+    0% {
+        opacity: 0.95;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes splashShimmerSweep {
+    0% {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    25% {
+        opacity: 0.45;
+    }
+    50% {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+}
+
+@keyframes wordmarkReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes taglineReveal {
+    0% {
+        opacity: 0;
+        letter-spacing: 0.1em;
+    }
+    100% {
+        opacity: 0.8;
+        letter-spacing: 0.22em;
+    }
+}
+
+@keyframes trackReveal {
+    0% {
+        opacity: 0;
+        transform: scaleX(0.4);
+    }
+    100% {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+@keyframes laserScan {
+    0% {
+        left: -45%;
+    }
+    100% {
+        left: 100%;
+    }
+}
