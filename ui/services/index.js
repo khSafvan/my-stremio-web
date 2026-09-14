@@ -4,10 +4,13 @@ const Chromecast = require('./Chromecast');
 const { ServicesProvider, useServices } = require('./ServicesContext');
 const { GamepadProvider, useGamepad } = require('./GamepadContext');
 
+const MetadataBridge = require('./MetadataBridge');
+
 module.exports = {
     Chromecast,
     ServicesProvider,
     useServices,
     GamepadProvider,
     useGamepad,
+    MetadataBridge,
 };
